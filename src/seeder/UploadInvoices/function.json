@@ -1,0 +1,16 @@
+{
+  "bindings": [
+    {
+      "name": "input",
+      "type": "activityTrigger",
+      "direction": "in"
+    },
+    {
+      "name": "outputBlob",
+      "type": "blob",
+      "path": "{containerName}/{filename}",
+      "direction": "out",
+      "connection": "DocumentStorage"
+    }    
+  ]
+}
