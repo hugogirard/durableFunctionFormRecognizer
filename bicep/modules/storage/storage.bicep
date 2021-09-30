@@ -107,3 +107,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01'
     }
   }
 }
+
+output strFunctionName string = storageAccountFunction.name
+output strFunctionId string = storageAccountFunction.id
+output strFunctionApiVersion string = storageAccountFunction.apiVersion
