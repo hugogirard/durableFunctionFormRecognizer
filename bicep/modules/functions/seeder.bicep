@@ -62,7 +62,7 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: 'InstrumentationKey=${appInsightCnxString}'
+          value: appInsightCnxString
         }
         {
           name: 'WEBSITE_CONTENTSHARE'

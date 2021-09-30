@@ -18,6 +18,7 @@ resource serverFarm 'Microsoft.Web/serverfarms@2020-06-01' = {
   }
   kind: 'elastic'
   properties: {
+    maximumElasticWorkerCount: 100    
   }
 }
 
@@ -35,7 +36,7 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: 'InstrumentationKey=${appInsightCnxString}'
+          value: appInsightCnxString
         }
         {
           name: 'AzureWebJobsStorage'
