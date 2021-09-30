@@ -39,11 +39,11 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${strAccountName};EndpointSuffix= ${environment().suffixes.storage};AccountKey=${listkeys(strAccountId, strAccountApiVersion).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${strAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strAccountId, strAccountApiVersion).keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${strAccountName};EndpointSuffix= ${environment().suffixes.storage};AccountKey=${listkeys(strAccountId, strAccountApiVersion).keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${strAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strAccountId, strAccountApiVersion).keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
