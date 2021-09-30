@@ -38,3 +38,16 @@ module functionSeeder 'modules/functions/seeder.bicep' = {
     strAccountName: storage.outputs.strFunctionName
   }
 }
+
+module functionProcessor 'modules/functions/processor.bicep' = {
+  name: 'functionProcessor'
+  params: {
+    location: location
+    suffix: suffix
+    appInsightCnxString: insight.outputs.appInsightCnxString
+    appInsightKey: insight.outputs.appInsightKey    
+    strAccountApiVersion: storage.outputs.strFunctionApiVersion
+    strAccountId: storage.outputs.strFunctionId
+    strAccountName: storage.outputs.strFunctionName    
+  }
+}
