@@ -8,7 +8,7 @@ on:
  workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'scr/seeder/'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'scr/seeder'
   NODE_VERSION: '14.x'
 
 jobs:
