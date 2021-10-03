@@ -4,38 +4,50 @@ const moment = require('moment');
 
 module.exports = df.orchestrator(function* (context) {
     
-    const outputs = {
-        totalSuccessDocument: 0,
-        totalErrorDocument: 0,
-        totalDocumentProcess: 0,
-        startedTime: moment.utc(new Date()).format(),
-        endedTime: 0
-    };
+    let outputs = {};
 
-    const payload = context.df.getInput();
-    const containerName = payload.containerName;
-    let factor = process.env.FACTOR || 1000;
+    if (!context.is_replaying) {
+        outputs = {
+            totalSuccessDocument: 0,
+            totalErrorDocument: 0,
+            totalDocumentProcess: 0,
+            startedTime: moment.utc(context.df.currentUtcDateTime).format(),
+            endedTime: 0
+        };
+    }
+
+
+    const nbrDocuments = context.df.getInput();
+    const containerName = 'documents';
+
+    // Send 1000 activities to write to storage at the time 
+    // or you can increase the throughput changing the
+    // environment variable value
+    const factor = process.env.FACTOR || 1000;
 
     let left = 0;
     let index = 0;
 
-    if (payload.nbrDocuments > factor) {
-        left = payload.nbrDocuments % factor;
-        index = Math.floor(payload.nbrDocuments / factor);        
+    // Calculate how many loop will need to be done
+    if (nbrDocuments > factor) {
+        left = nbrDocuments % factor;
+        index = Math.floor(nbrDocuments / factor);        
     } else {
         index = 1;
-        factor = payload.nbrDocuments;
+        factor = nbrDocuments;
     }
 
     context.log.info(`Left: ${left}`);
     context.log.info(`Index: ${index}`);
     context.log.info(`Factor: ${factor}`);
-    context.log.info(`Nbr of documents: ${payload.nbrDocuments}`);
+    context.log.info(`Nbr of documents: ${nbrDocuments}`);
 
     for (let i = 0; i < index; i++) {
+
         const tasks = startActivities(factor,context,containerName);
         const results = yield context.df.Task.all(tasks);
-        aggregate(outputs,results);    
+        aggregate(outputs,results);
+    
     }
 
     if (left > 0){
@@ -44,9 +56,9 @@ module.exports = df.orchestrator(function* (context) {
         aggregate(outputs,results);    
     }
     
-    outputs.totalDocumentProcess = payload.nbrDocuments;
+    outputs.totalDocumentProcess = nbrDocuments;
 
-    outputs.endedTime = moment.utc(new Date()).format();
+    //outputs.endedTime = moment.utc(new Date()).format();
 
     return outputs;
 });
@@ -59,10 +71,11 @@ function aggregate(outputs,results) {
     outputs.totalErrorDocument += documentsInError.length;        
 }
 
+// Send X (factor) activities to write to storage
 function startActivities(factor,context,containerName){
     const tasks = [];
     for (let y = 0; y < factor; y++) {
-        const filename = `${uuidv4()}.pdf`;      
+        const filename = `${context.df.newGuid()}-${moment.utc(context.df.currentUtcDateTime).format()}.pdf`;              
         const input = {
             containerName: containerName,
             filename: filename

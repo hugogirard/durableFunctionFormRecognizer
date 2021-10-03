@@ -61,6 +61,10 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
           value: appInsightKey
         }
         {
+          name: 'CONTAINER_NAME'
+          value: 'documents'
+        }
+        {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightCnxString
         }
