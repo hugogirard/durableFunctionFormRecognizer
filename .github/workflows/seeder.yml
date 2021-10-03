@@ -4,11 +4,11 @@ on:
    branches:
      - 'main'
    paths:
-     - 'scr/seeder/*'
+     - 'src/seeder/*'
  workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'scr/seeder'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seeder'
   NODE_VERSION: '14.x'
 
 jobs:
@@ -24,11 +24,6 @@ jobs:
         uses: Azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}  
-
-      - name: List Directory
-        shell: bash
-        run: |
-           ls
 
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v2
