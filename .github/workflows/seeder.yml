@@ -4,7 +4,7 @@ on:
    branches:
      - 'main'
    paths:
-     - 'scr/seeder/*'
+     - './scr/seeder/*'
  workflow_dispatch:
 
 env:
