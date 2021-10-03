@@ -1,5 +1,4 @@
-name: create-azure-resources
-
+name: Deploy seeder function
 on:
  push:
    branches:
