@@ -28,7 +28,7 @@ jobs:
       - name: List Directory
         shell: bash
         run: |
-          echo ls
+           ls
 
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
         uses: actions/setup-node@v2
