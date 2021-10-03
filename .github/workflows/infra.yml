@@ -46,3 +46,9 @@ jobs:
           resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
           template: ./bicep/main.json
           parameters: location=${{ github.event.inputs.location }}
+
+      - uses: gliech/create-github-secret-action@v1
+        with:
+          name: FUNCTION_SEEDER_NAME
+          value: ${{ steps.armDeployment.outputs.seederFunctionName }}
+          pa_token: ${{ secrets.PA_TOKEN }}

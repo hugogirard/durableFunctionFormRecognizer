@@ -5,6 +5,9 @@ param appInsightCnxString string
 param strAccountName string
 param strAccountId string
 param strAccountApiVersion string
+param strAccountDocumentName string
+param strAccountDocumentId string
+param strAccountDocumentApiVersion string
 
 var appServiceName = 'plan-seeder-${suffix}'
 var functionAppName = 'fnc-seeder-${suffix}'
@@ -61,6 +64,10 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
           value: appInsightKey
         }
         {
+          name: 'DocumentStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${strAccountDocumentName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strAccountDocumentId, strAccountDocumentApiVersion).keys[0].value}'
+        }
+        {
           name: 'CONTAINER_NAME'
           value: 'documents'
         }
@@ -95,3 +102,5 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
     redundancyMode: 'None'
   }  
 }
+
+output functionSeederName string = functionApp.name
