@@ -34,6 +34,7 @@ jobs:
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
           dotnet build --configuration Release --output ./output
+          cp Documents/* ./output
           popd
 
       - name: 'Run Azure Functions Action'

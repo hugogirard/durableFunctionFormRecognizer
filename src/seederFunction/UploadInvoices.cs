@@ -36,8 +36,8 @@ namespace Seeder
                 };
 
                 await blobClient.CreateAsync(appendOptions);
-                using (FileStream fs = File.Open(@"Document\Invoice_Template.pdf",FileMode.Open))
-                {
+                using (FileStream fs = File.Open(@"Invoice_Template.pdf",FileMode.Open))
+                {                    
                     await blobClient.AppendBlockAsync(fs);
                 }
                 
