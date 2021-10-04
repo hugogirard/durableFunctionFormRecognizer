@@ -4,12 +4,11 @@ on:
    branches:
      - 'main'
    paths:
-     - 'src/seeder/*'
+     - 'src/seederFunction/*'
  workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seeder'
-  NODE_VERSION: '14.x'
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction'
 
 jobs:
   create-azure-resources:
@@ -25,17 +24,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}  
 
-      - name: Setup Node ${{ env.NODE_VERSION }} Environment
-        uses: actions/setup-node@v2
+      - name: Setup DotNet 3.1.X Environment
+        uses: actions/setup-dotnet@v1
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          dotnet-version: '3.1.X'
 
-      - name: 'Resolve Project Dependencies Using Npm'
+      - name: 'Building with Dotnet'
         shell: bash
         run: |
           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          npm install
-          npm run build --if-present
+          dotnet build --configuration Release --output ./output
           popd
 
       - name: 'Run Azure Functions Action'
@@ -43,4 +41,4 @@ jobs:
         id: fa
         with:
           app-name: ${{ secrets.FUNCTION_SEEDER_NAME }}
-          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'                
+          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'                

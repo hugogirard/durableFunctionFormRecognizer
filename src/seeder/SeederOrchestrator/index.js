@@ -23,7 +23,7 @@ module.exports = df.orchestrator(function* (context) {
     // Send 1000 activities to write to storage at the time 
     // or you can increase the throughput changing the
     // environment variable value
-    const factor = process.env.FACTOR || 1000;
+    let factor = process.env.FACTOR || 1000;
 
     let left = 0;
     let index = 0;
