@@ -36,18 +36,11 @@ namespace Seeder
 
                 if (responseUpload.GetRawResponse().Status.IsSuccessStatusCode()) 
                 {
-                    //var appendBlobClient = _blobContainerClient.GetAppendBlobClient(parameter.Filename);
-                    //var appendOptions = new AppendBlobCreateOptions();
-                    //appendOptions.Tags = new Dictionary<string, string>
-                    //{
-                    //  { "status", "unprocessed" }
-                    //};
-
-                    //var responseAppend = await appendBlobClient.CreateAsync(appendOptions);
-                    //if (responseAppend.GetRawResponse().Status != 200) 
-                    //{
-                    //    activityResult.Error = $"Cannot append tag to blob ${parameter.Filename} - StatusCode: ${responseAppend.GetRawResponse().Status}";
-                    //}
+                    var tags = new Dictionary<string, string>
+                    {
+                      { "status", "unprocessed" }
+                    };
+                    await blobClient.SetTagsAsync(tags);
                 }
                 else 
                 {
