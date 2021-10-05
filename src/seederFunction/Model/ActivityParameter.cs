@@ -9,6 +9,7 @@ namespace Seeder.Model
     {
         public string Filename { get; set; }
 
-        public Stream Content { get; set; }
+        public string ModelName { get; set; }
+
     }
 }

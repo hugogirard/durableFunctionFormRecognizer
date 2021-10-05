@@ -14,33 +14,47 @@ namespace Seeder
 {
     public class UploadInvoices
     {
-        private readonly BlobContainerClient _containerClient;
+        private readonly BlobContainerClient _blobContainerClient;
 
-        public UploadInvoices(BlobContainerClient containerClient)
+        public UploadInvoices(BlobContainerClient blobContainerClient)
         {
-            _containerClient = containerClient;
+            _blobContainerClient = blobContainerClient;
         }
 
         [FunctionName("UploadInvoice")]
-        public async Task<ActivityResult> SayHello([ActivityTrigger] string filename, ILogger log)
+        public async Task<ActivityResult> UploadInvoice(
+            [ActivityTrigger] ActivityParameter parameter,
+            [Blob("models/{parameter.ModelName}", FileAccess.Read, Connection = "DocumentStorage")] Stream myBlob,
+            ILogger log)
         {
             var activityResult = new ActivityResult();
-
             try
             {
-                var blobClient = _containerClient.GetAppendBlobClient(filename);
-                var appendOptions = new AppendBlobCreateOptions();
-                appendOptions.Tags = new Dictionary<string, string>
-                {
-                  { "status", "unprocessed" }
-                };
+                var blobClient = _blobContainerClient.GetBlobClient(parameter.Filename);
 
-                await blobClient.CreateAsync(appendOptions);
-                using (FileStream fs = File.Open(@"Invoice_Template.pdf",FileMode.Open))
-                {                    
-                    await blobClient.AppendBlockAsync(fs);
+                var responseUpload = await blobClient.UploadAsync(myBlob);
+
+                if (responseUpload.GetRawResponse().Status.IsSuccessStatusCode()) 
+                {
+                    //var appendBlobClient = _blobContainerClient.GetAppendBlobClient(parameter.Filename);
+                    //var appendOptions = new AppendBlobCreateOptions();
+                    //appendOptions.Tags = new Dictionary<string, string>
+                    //{
+                    //  { "status", "unprocessed" }
+                    //};
+
+                    //var responseAppend = await appendBlobClient.CreateAsync(appendOptions);
+                    //if (responseAppend.GetRawResponse().Status != 200) 
+                    //{
+                    //    activityResult.Error = $"Cannot append tag to blob ${parameter.Filename} - StatusCode: ${responseAppend.GetRawResponse().Status}";
+                    //}
                 }
-                
+                else 
+                {
+                    activityResult.Error = $"Cannot upload blob error code ${responseUpload.GetRawResponse().Status}";
+                }
+
+                activityResult.IsSucces = true;
             }
             catch (Exception ex)
             {

@@ -21,12 +21,8 @@ namespace Seeder
 
             try
             {
-                if (!context.IsReplaying)
-                {
-                    result.StartedTime = context.CurrentUtcDateTime;
-                    result.TotalDocumentProcess = context.GetInput<OrchestratorParameter>().NbrDocuments;
-                }
-
+                result.TotalDocumentProcess = context.GetInput<OrchestratorParameter>().NbrDocuments;
+                
                 var nbrDocuments = context.GetInput<OrchestratorParameter>().NbrDocuments;
 
                 int factor = Environment.GetEnvironmentVariable("FACTOR") == null
@@ -39,7 +35,7 @@ namespace Seeder
                 if (nbrDocuments > factor)
                 {
                     left = nbrDocuments % factor;
-                    //index = Math.Floor(nbrDocuments % factor);
+                    index = nbrDocuments / factor;
                 }
                 else
                 {
@@ -79,7 +75,11 @@ namespace Seeder
             for (int i = 0; i < factor; i++)
             {
                 string filename = $"{context.NewGuid()}.pdf";
-                tasks[i] = context.CallActivityAsync<ActivityResult>("UploadInvoice", filename);
+                tasks[i] = context.CallActivityAsync<ActivityResult>("UploadInvoice", new  ActivityParameter()
+                { 
+                    Filename = filename,
+                    ModelName = "ceo.pdf"
+                });
             }
 
             return tasks;

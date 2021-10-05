@@ -5,13 +5,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Document\**" />
+    <Compile Remove="test\**" />
     <EmbeddedResource Remove="Document\**" />
+    <EmbeddedResource Remove="test\**" />
     <None Remove="Document\**" />
+    <None Remove="test\**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.5" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
   </ItemGroup>
   <ItemGroup>
@@ -25,8 +29,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="test\" />
   </ItemGroup>
 </Project>
