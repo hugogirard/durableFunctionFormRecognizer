@@ -16,6 +16,7 @@ namespace Seeder
             var serviceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("DocumentStorage"));
             var containerClient = serviceClient.GetBlobContainerClient("documents");
 
+            builder.Services.AddSingleton(typeof(BlobServiceClient), serviceClient);
             builder.Services.AddSingleton(typeof(BlobContainerClient), containerClient);
         }
     }
