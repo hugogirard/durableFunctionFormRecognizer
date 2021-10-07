@@ -7,7 +7,7 @@ namespace Seeder.Model
 {
     public class ActivityParameter
     {
-        public string Filename { get; set; }
+        public IEnumerable<string> Filenames { get; set; }
 
         public string ModelName { get; set; }
 

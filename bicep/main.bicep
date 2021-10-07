@@ -39,6 +39,7 @@ module functionSeeder 'modules/functions/seeder.bicep' = {
     strAccountDocumentName: storage.outputs.strDocumentName
     strAccountDocumentId: storage.outputs.strDocumentId
     strAccountDocumentApiVersion: storage.outputs.strDocumentApiVersion
+    appServiceId: functionProcessor.outputs.serverFarmId
   }
 }
 

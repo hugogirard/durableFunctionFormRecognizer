@@ -8,8 +8,9 @@ param strAccountApiVersion string
 param strAccountDocumentName string
 param strAccountDocumentId string
 param strAccountDocumentApiVersion string
+param appServiceId string
 
-var appServiceName = 'plan-seeder-${suffix}'
+var appServiceName = 'plan-seeder--elastic-${suffix}'
 var functionAppName = 'fnc-seeder-${suffix}'
 
 resource appService 'Microsoft.Web/serverFarms@2020-06-01' = {
@@ -45,7 +46,7 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
         hostType: 'Standard'
       }
     ]
-    serverFarmId: appService.id
+    serverFarmId: appServiceId
     reserved: false
     isXenon: false
     hyperV: false
@@ -78,7 +79,11 @@ resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'WEBSITE_CONTENTSHARE'
           value: 'seederapp092'
-        }                
+        }
+        {
+          name: 'Mode'
+          value: 'parallel'
+        }               
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet'

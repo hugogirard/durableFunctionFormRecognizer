@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,7 +17,7 @@ namespace Seeder
             var serviceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("DocumentStorage"));
             var containerClient = serviceClient.GetBlobContainerClient("documents");
 
-            builder.Services.AddSingleton(typeof(BlobServiceClient), serviceClient);
+            //builder.Services.AddSingleton(typeof(BlobServiceClient), serviceClient);
             builder.Services.AddSingleton(typeof(BlobContainerClient), containerClient);
         }
     }

@@ -26,7 +26,7 @@ namespace Seeder
                 var nbrDocuments = context.GetInput<OrchestratorParameter>().NbrDocuments;
 
                 int factor = Environment.GetEnvironmentVariable("FACTOR") == null
-                             ? 10
+                             ? 100
                              : int.Parse(Environment.GetEnvironmentVariable("FACTOR"));
 
                 int left = 0;
@@ -43,19 +43,38 @@ namespace Seeder
                     factor = nbrDocuments;
                 }
 
-                for (int i = 0; i < index; i++)
+                if (Environment.GetEnvironmentVariable("Mode") == "parallel")
                 {
-                    var tasks = StartActivies(factor, context);
-                    await Task.WhenAll(tasks);
-                    Aggregate(tasks.Select(t => t.Result), result);
+                    for (int i = 0; i < index; i++)
+                    {
+                        var activityResult = await StartActiviesWithTasks(factor, context);
+                        Aggregate(activityResult, result);
+                    }
+
+                    if (left > 0)
+                    {
+                        var activityResult = await StartActiviesWithTasks(left, context);
+                        Aggregate(activityResult, result);
+                    }
+                }
+                else 
+                {
+                    for (int i = 0; i < index; i++)
+                    {
+                        var tasks = StartActivies(factor, context);
+                        await Task.WhenAll(tasks);
+                        Aggregate(tasks.Select(t => t.Result), result);
+                    }
+
+                    if (left > 0)
+                    {
+                        var tasks = StartActivies(left, context);
+                        await Task.WhenAll(tasks);
+                        Aggregate(tasks.Select(t => t.Result), result);
+                    }
                 }
 
-                if (left > 0)
-                {
-                    var tasks = StartActivies(left, context);
-                    await Task.WhenAll(tasks);
-                    Aggregate(tasks.Select(t => t.Result), result);
-                }
+
 
                 return result;
             }
@@ -68,6 +87,21 @@ namespace Seeder
 
         }
 
+        private async Task<IEnumerable<ActivityResult>> StartActiviesWithTasks(int factor, IDurableOrchestrationContext context)
+        {
+            var filenames = new List<string>();
+            for (int i = 0; i < factor; i++)
+            {
+                filenames.Add($"{context.NewGuid()}.pdf");
+            }
+
+            return await context.CallActivityAsync<IEnumerable<ActivityResult>>("UploadInvoice", new  ActivityParameter()
+            { 
+                Filenames = filenames,
+                ModelName = "ceo.pdf"
+            });
+        }
+
         private Task<ActivityResult>[] StartActivies(int factor, IDurableOrchestrationContext context)
         {
             var tasks = new Task<ActivityResult>[factor];
@@ -75,9 +109,9 @@ namespace Seeder
             for (int i = 0; i < factor; i++)
             {
                 string filename = $"{context.NewGuid()}.pdf";
-                tasks[i] = context.CallActivityAsync<ActivityResult>("UploadInvoice", new  ActivityParameter()
-                { 
-                    Filename = filename,
+                tasks[i] = context.CallActivityAsync<ActivityResult>("UploadInvoice", new ActivityParameter()
+                {
+                    Filenames = new List<string> { filename },
                     ModelName = "ceo.pdf"
                 });
             }
