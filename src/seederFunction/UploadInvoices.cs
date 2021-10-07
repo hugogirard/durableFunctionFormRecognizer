@@ -31,19 +31,20 @@ namespace Seeder
             [Blob("models/{parameter.ModelName}", FileAccess.Read, Connection = "DocumentStorage")] string myBlob,
             ILogger log)
         {
+
             var activityResults = new List<ActivityResult>();
             try
-            {
-                var tasks = new Queue<Task<ActivityResult>>();
-                //var tasks = new List<Task>();
+            {                
+                var tasks = new List<Task>();
                 foreach (var filename in parameter.Filenames)
                 {
-                    tasks.Enqueue(UploadBlob(filename, myBlob));
-                    //tasks.Add(UploadBlob(filename, myBlob));
+                    
+                    tasks.Add(UploadBlob(filename, myBlob));
                 }
 
-                var result = await Task.WhenAll(tasks);
-                return result;
+                await Task.WhenAll(tasks);
+                tasks.ForEach(t => activityResults.Add(((Task<ActivityResult>)t).Result));
+                tasks.Clear();
             }
             catch (Exception ex)
             {
