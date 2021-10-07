@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Storage;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Azure.Storage.Blob;
@@ -30,19 +31,19 @@ namespace Seeder
             [Blob("models/{parameter.ModelName}", FileAccess.Read, Connection = "DocumentStorage")] string myBlob,
             ILogger log)
         {
-
             var activityResults = new List<ActivityResult>();
             try
             {
-                var tasks = new List<Task>();
+                var tasks = new Queue<Task<ActivityResult>>();
+                //var tasks = new List<Task>();
                 foreach (var filename in parameter.Filenames)
-                {      
-                    tasks.Add(UploadBlob(filename, myBlob));
+                {
+                    tasks.Enqueue(UploadBlob(filename, myBlob));
+                    //tasks.Add(UploadBlob(filename, myBlob));
                 }
 
-                await Task.WhenAll(tasks);
-                tasks.ForEach(t => activityResults.Add(((Task<ActivityResult>)t).Result));
-                tasks.Clear();
+                var result = await Task.WhenAll(tasks);
+                return result;
             }
             catch (Exception ex)
             {
