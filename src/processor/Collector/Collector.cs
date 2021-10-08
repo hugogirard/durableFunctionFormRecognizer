@@ -61,6 +61,7 @@ public class Collector
     [FunctionName("Collector_Collect")]
     public async Task<CollectorOutput> Collect([ActivityTrigger] string continuationToken, ILogger log)
     {
+        log.LogInformation("Collecting blobs...");
         return await blobStorageService.GetUnprocessedBlobs(options.BatchSize, continuationToken);
     }
 }

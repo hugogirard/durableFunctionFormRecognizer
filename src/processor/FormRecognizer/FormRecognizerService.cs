@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer;
 using Azure.AI.FormRecognizer.Models;
+using Microsoft.Extensions.Logging;
 
 public class FormRecognizerService : IFormRecognizerService
 {
@@ -14,7 +15,7 @@ public class FormRecognizerService : IFormRecognizerService
         this.formRecognizerClient = formRecognizerClient;
     }
 
-    public async Task<string> SubmitDocument(string modelId, Stream stream)
+    public async Task<string> SubmitDocument(string modelId, Stream stream, ILogger log)
     {
         try
         {
@@ -22,12 +23,16 @@ public class FormRecognizerService : IFormRecognizerService
         }
         catch (RequestFailedException ex)
         {
-            if (ex.ErrorCode == "429") return null;
+            if (ex.ErrorCode == "429") 
+            {
+                log.LogWarning("Form Recognizer call was throttled...");
+                return null;
+            }
             throw;
         }
     }    
 
-    public async Task<FormRecognizerResult> RetreiveResults(string operationId)
+    public async Task<FormRecognizerResult> RetreiveResults(string operationId, ILogger log)
     {
         try
         {
@@ -42,7 +47,11 @@ public class FormRecognizerService : IFormRecognizerService
         }
         catch (RequestFailedException ex)
         {
-            if (ex.ErrorCode == "429") return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.TransientFailure };;
+            if (ex.ErrorCode == "429") 
+            {
+                log.LogWarning("Form Recognizer call was throttled...");
+                return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.TransientFailure };;
+            }
             throw;
         }            
     }

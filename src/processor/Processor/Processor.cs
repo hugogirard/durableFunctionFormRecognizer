@@ -64,6 +64,9 @@ public class Processor
 
         do
         {
+            if(postMode) log.LogInformation($"Submitting documents to Form Recognizer for partition {input.PartitionId}...");
+            else log.LogInformation($"Getting Form Recognizer results for partition {input.PartitionId}...");
+
             for(int i=0; i<options.MaxRetries; i++)
             {
                 var unprocessedBlobInfos = postMode ? processBlobInfos.Values.Where(x => String.IsNullOrEmpty(x.OperationId)).ToArray() :
@@ -82,6 +85,7 @@ public class Processor
         }
         while (!postMode);
  
+        log.LogInformation($"Saving documents for partition {input.PartitionId}...");
         await cosmosService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
                 Id = x.Blob.BlobName,
                 State = x.Blob.State.ToString(),
@@ -96,6 +100,7 @@ public class Processor
     [FunctionName("Processor_UpdateState")]
     public async Task UpdateState([ActivityTrigger] IEnumerable<BlobInfo> blobs, ILogger log)
     {
+        log.LogInformation($"Updating state in storage...");
         await blobStorageService.UpdateState(blobs);
     }
 
@@ -103,22 +108,11 @@ public class Processor
     {
         try
         {
-            // // Simulate failures and latency
-            // var rnd = new Random();
-            // if (rnd.Next(1, 10) == 1) throw new ApplicationException("Random failure");
-            // if (rnd.Next(1, 10) == 2) { Thread.Sleep(2000); log.LogInformation("Random delay"); }
-            // if (rnd.Next(1, 10) == 3)
-            // {
-            //     log.LogInformation("Transient failure");
-            //     blob.TransientFailureCount++;
-            //     return result;
-            // }
-
             if (postMode) 
             {
                 using(var stream = await blobStorageService.DownloadStream(processBlobInfo.Blob.BlobName))
                 {
-                    processBlobInfo.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream);
+                    processBlobInfo.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream, log);
                     processBlobInfo.StartTime = DateTime.Now;
                     if (String.IsNullOrEmpty(processBlobInfo.OperationId)) processBlobInfo.Blob.TransientFailureCount++;
                 }
@@ -130,7 +124,7 @@ public class Processor
                     var timeToSleep = processBlobInfo.StartTime + options.MinProcessingTime - DateTime.Now;
                     if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
 
-                    var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId);                    
+                    var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId, log);                    
                     if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.TransientFailure) processBlobInfo.Blob.TransientFailureCount++;
                     if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
                     if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult) 

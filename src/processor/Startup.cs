@@ -7,6 +7,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -36,24 +37,24 @@ public class Startup : FunctionsStartup
         var noDataDelay = GetConfigValue<TimeSpan>(config, "NoDataDelay", defaultValue: TimeSpan.FromSeconds(10));
         var minProcessingTime = GetConfigValue<TimeSpan>(config, "MinProcessingTime", defaultValue: TimeSpan.FromSeconds(10));
 
-        //builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
-        builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
-            blobContainerName, new BlobServiceClient(storageAccountConnectionString)));
+        builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
+        // builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
+        //     blobContainerName, new BlobServiceClient(storageAccountConnectionString)));
 
-        //builder.Services.AddHttpClient();
-        //var serviceUrl = GetConfigValue<string>(config, "ServiceUrl", throwIfMissing: true);
-        // builder.Services.AddSingleton<IFormRecognizerService>(sp => new FormRecognizerMockService(
-        //     new Uri(serviceUrl), sp.GetService<IHttpClientFactory>()));
-        builder.Services.AddSingleton<IFormRecognizerService>(_ => {
-            var formRecognizerClientOptions = new FormRecognizerClientOptions();
-            formRecognizerClientOptions.Retry.MaxRetries = 0;
-            return new FormRecognizerService(new FormRecognizerClient(new Uri(formRecognizerEndpoint), 
-                new Azure.AzureKeyCredential(formRecognizerKey), formRecognizerClientOptions));
-        });
+        builder.Services.AddHttpClient();
+        var serviceUrl = GetConfigValue<string>(config, "ServiceUrl", throwIfMissing: true);
+         builder.Services.AddSingleton<IFormRecognizerService>(sp => new FormRecognizerMockService(
+             new Uri(serviceUrl), sp.GetService<IHttpClientFactory>()));
+        // builder.Services.AddSingleton<IFormRecognizerService>(_ => {
+        //     var formRecognizerClientOptions = new FormRecognizerClientOptions();
+        //     formRecognizerClientOptions.Retry.MaxRetries = 0;
+        //     return new FormRecognizerService(new FormRecognizerClient(new Uri(formRecognizerEndpoint), 
+        //         new Azure.AzureKeyCredential(formRecognizerKey), formRecognizerClientOptions));
+        // });
 
         builder.Services.AddSingleton<ICosmosService>(_ => {
             var client = new CosmosClient(cosmosEndpoint, cosmosAuthKey, new CosmosClientOptions() { AllowBulkExecution = true });
-            return new CosmosService(client.GetContainer(cosmosDatabaseId, cosmosContainerId));
+            return new CosmosService(client.GetContainer(cosmosDatabaseId, cosmosContainerId), 100 / nbPartitions);
         });
 
         var partitionSize = (int)Math.Ceiling((double)batchSize / nbPartitions);
