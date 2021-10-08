@@ -87,7 +87,7 @@ public class Processor
         await cosmosService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
                 Id = x.Blob.BlobName,
                 State = x.Blob.State.ToString(),
-                Forms = x.Forms?.Select(x => SerializeForm(x)),
+                Forms = x.Forms?.Select(x => new Document.Form(x)),
                 Exception = x.Exception,
                 TransientFailureCount = x.Blob.TransientFailureCount
             }));
@@ -151,17 +151,5 @@ public class Processor
             processBlobInfo.Blob.State = BlobInfo.ProcessState.Failed;
             return processBlobInfo;
         }
-    }
-
-    private JObject SerializeForm(RecognizedForm form)
-    {
-        return new JObject(new JProperty("FormType", form.FormType),
-                           new JProperty("FormTypeConfidence", form.FormTypeConfidence),
-                           new JProperty("ModelId", form.ModelId),
-                           new JProperty("Fields",
-                                 new JArray(form.Fields.Select(x => 
-                                    new JObject(new JProperty("Name", x.Value.Name),
-                                                new JProperty("Confidence", x.Value.Confidence),
-                                                new JProperty("Value", x.Value.Value.AsString()))))));
     }
 }
