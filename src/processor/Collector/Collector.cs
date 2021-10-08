@@ -52,7 +52,7 @@ public class Collector
             var state = await client.ReadEntityStateAsync<BlobInfoEntity>(entityId);
             if (state.EntityExists)
             {
-                count += state.EntityState.CountUnreserved();
+                count += state.EntityState.Count();
             }
         }
         return count;

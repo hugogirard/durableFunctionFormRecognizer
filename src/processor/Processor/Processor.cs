@@ -45,7 +45,6 @@ public class Processor
                 new ProcessInput() { PartitionId = input.PartitionId, Blobs = blobs });
             
             await context.CallActivityAsync("Processor_UpdateState", blobs);
-            await context.CallEntityAsync<IEnumerable<BlobInfo>>(entityId, "RemoveReserved");
 
             input.Stats.TotalProcessed += blobs.Count(x => x.State == BlobInfo.ProcessState.Processed);
             input.Stats.TotalFailed += blobs.Count(x => x.State == BlobInfo.ProcessState.Failed);

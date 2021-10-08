@@ -18,14 +18,18 @@ public class BlobInfoEntity
 
     public void Clear() => Blobs.Clear();
 
-    public int CountUnreserved() => Blobs.Where(x => !x.Reserved).Count();
+    public int Count() => Blobs.Count;
     
     public IEnumerable<BlobInfo> Reserve(int maximumAmount)
     {
         if (Blobs.Count() == 0) return Enumerable.Empty<BlobInfo>();
 
-        maximumAmount = Math.Min(Blobs.Count(), maximumAmount);  
-        var blobs = Blobs.Take(maximumAmount).ToArray();
+        foreach(var blob in Blobs.Where(x => x.Reserved).ToArray())
+        {
+            Blobs.Remove(blob);
+        }        
+
+        var blobs = Blobs.Take(Math.Min(Blobs.Count, maximumAmount));
         foreach(var blob in blobs)
         {
             blob.Reserved = true;
@@ -41,14 +45,6 @@ public class BlobInfoEntity
         {
             if (!blobIndex.ContainsKey(blob.BlobName))
                 Blobs.Add(blob);
-        }
-    }
-
-    public void RemoveReserved()
-    {
-        foreach(var blob in Blobs.Where(x => x.Reserved).ToArray())
-        {
-            Blobs.Remove(blob);
         }
     }
 
