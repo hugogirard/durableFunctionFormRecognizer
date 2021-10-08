@@ -28,12 +28,13 @@ public class Startup : FunctionsStartup
         var cosmosDatabaseId = GetConfigValue<string>(config, "CosmosDatabaseId", throwIfMissing: true);
         var cosmosContainerId = GetConfigValue<string>(config, "CosmosContainerId", throwIfMissing: true);
         
-        var batchSize = GetConfigValue<int>(config, "BatchSize", defaultValue: 10);
-        var minBacklogSize = GetConfigValue<int>(config, "MinBacklogSize", defaultValue: 20);
+        var batchSize = GetConfigValue<int>(config, "BatchSize", defaultValue: 5);
+        var minBacklogSize = GetConfigValue<int>(config, "MinBacklogSize", defaultValue: 10);
         var nbPartitions = GetConfigValue<int>(config, "NbPartitions", defaultValue: 1);
         var maxRetries = GetConfigValue<int>(config, "MaxRetries", defaultValue: 3);
         var collectDelay = GetConfigValue<TimeSpan>(config, "CollectDelay", defaultValue: TimeSpan.FromSeconds(10));
         var noDataDelay = GetConfigValue<TimeSpan>(config, "NoDataDelay", defaultValue: TimeSpan.FromSeconds(10));
+        var minProcessingTime = GetConfigValue<TimeSpan>(config, "MinProcessingTime", defaultValue: TimeSpan.FromSeconds(10));
 
         //builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
         builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
@@ -63,7 +64,7 @@ public class Startup : FunctionsStartup
                                      BlobContainerName = blobContainerName});
         
         builder.Services.AddSingleton<ProcessorOptions>((_) =>
-            new ProcessorOptions() { NbPartitions =nbPartitions, PartitionSize = partitionSize, NoDataDelay = noDataDelay, 
+            new ProcessorOptions() { NbPartitions =nbPartitions, PartitionSize = partitionSize, NoDataDelay = noDataDelay, MinProcessingTime = minProcessingTime,
                                      BlobContainerName = blobContainerName, MaxRetries = maxRetries, FormRecognizerModelId = formRecognizerModelId }); 
     }
 

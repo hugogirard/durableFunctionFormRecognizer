@@ -62,24 +62,21 @@ public class Processor
     public async Task<IEnumerable<BlobInfo>> ProcessPartition([ActivityTrigger] ProcessInput input, ILogger log)
     {
         var postMode = true;
-        var results = input.Blobs.ToDictionary(x => x.BlobName, x => new ProcessBlobResult() { Blob = x });
+        var processBlobInfos = input.Blobs.ToDictionary(x => x.BlobName, x => new ProcessBlobInfo() { Blob = x });
 
         do
         {
             for(int i=0; i<options.MaxRetries; i++)
             {
-                var unprocessed = postMode ? results.Values.Where(x => String.IsNullOrEmpty(x.OperationId)).ToArray() :
-                                             results.Values.Where(x => x.Blob.State == BlobInfo.ProcessState.Unprocessed).ToArray();
+                var unprocessedBlobInfos = postMode ? processBlobInfos.Values.Where(x => String.IsNullOrEmpty(x.OperationId)).ToArray() :
+                                                      processBlobInfos.Values.Where(x => x.Blob.State == BlobInfo.ProcessState.Unprocessed).ToArray();
 
-                if (!unprocessed.Any()) break;
+                if (!unprocessedBlobInfos.Any()) break;
 
-                foreach (var blob in unprocessed)
+                foreach (var processBlobInfo in unprocessedBlobInfos)
                 {
-                    string operationId = null;
-                    if (results.ContainsKey(blob.Blob.BlobName))
-                        operationId = blob.OperationId;
-                    var result = await ProcessBlob(blob.Blob, operationId, postMode, log);
-                    results[result.Blob.BlobName] = result;
+                    processBlobInfos[processBlobInfo.Blob.BlobName] = 
+                        await ProcessBlob(processBlobInfos[processBlobInfo.Blob.BlobName], postMode, log);
                 }
             }
 
@@ -87,7 +84,7 @@ public class Processor
         }
         while (!postMode);
  
-        await cosmosService.SaveDocuments(results.Values.Select(x => new Document() { 
+        await cosmosService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
                 Id = x.Blob.BlobName,
                 State = x.Blob.State.ToString(),
                 Forms = x.Forms?.Select(x => SerializeForm(x)),
@@ -95,7 +92,7 @@ public class Processor
                 TransientFailureCount = x.Blob.TransientFailureCount
             }));
 
-        return results.Values.Select(x => x.Blob);
+        return processBlobInfos.Values.Select(x => x.Blob);
     }
 
     [FunctionName("Processor_UpdateState")]
@@ -104,12 +101,10 @@ public class Processor
         await blobStorageService.UpdateState(blobs);
     }
 
-    private async Task<ProcessBlobResult> ProcessBlob(BlobInfo blob, string operationId, bool postMode, ILogger log)
+    private async Task<ProcessBlobInfo> ProcessBlob(ProcessBlobInfo processBlobInfo, bool postMode, ILogger log)
     {
         try
         {
-            var result = new ProcessBlobResult() { Blob = blob, OperationId = operationId };
-
             // // Simulate failures and latency
             // var rnd = new Random();
             // if (rnd.Next(1, 10) == 1) throw new ApplicationException("Random failure");
@@ -123,33 +118,38 @@ public class Processor
 
             if (postMode) 
             {
-                using(var stream = await blobStorageService.DownloadStream(blob.BlobName))
+                using(var stream = await blobStorageService.DownloadStream(processBlobInfo.Blob.BlobName))
                 {
-                    result.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream);
-                    if (String.IsNullOrEmpty(result.OperationId)) blob.TransientFailureCount++;
+                    processBlobInfo.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream);
+                    processBlobInfo.StartTime = DateTime.Now;
+                    if (String.IsNullOrEmpty(processBlobInfo.OperationId)) processBlobInfo.Blob.TransientFailureCount++;
                 }
             }                
             else
             {   
-                if (!String.IsNullOrEmpty(result.OperationId))
-                {                    
-                    var formRecognizerResult = await formRecognizerService.RetreiveResults(result.OperationId);                    
-                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.TransientFailure) blob.TransientFailureCount++;
-                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) blob.State = BlobInfo.ProcessState.Processed;
+                if (!String.IsNullOrEmpty(processBlobInfo.OperationId))
+                {
+                    var timeToSleep = processBlobInfo.StartTime + options.MinProcessingTime - DateTime.Now;
+                    if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
+
+                    var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId);                    
+                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.TransientFailure) processBlobInfo.Blob.TransientFailureCount++;
+                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
                     if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult) 
                     {
-                        result.Forms = formRecognizerResult.Forms;
-                        blob.State = BlobInfo.ProcessState.Processed;
+                        processBlobInfo.Forms = formRecognizerResult.Forms;
+                        processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
                     }
                 }
             }
-            return result;
+            return processBlobInfo;
         }
         catch (Exception e)
         {
             log.LogError(e.ToString());
-            blob.State = BlobInfo.ProcessState.Failed;
-            return new ProcessBlobResult() { Blob = blob, Exception = e.ToString() };
+            processBlobInfo.Exception = e.ToString();
+            processBlobInfo.Blob.State = BlobInfo.ProcessState.Failed;
+            return processBlobInfo;
         }
     }
 
