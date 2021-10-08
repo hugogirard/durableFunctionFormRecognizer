@@ -17,10 +17,7 @@ public class ProcessorInput
 
     [JsonProperty("i")]
     public int PartitionId { get; set; }
-
-    [JsonProperty("m")]
-    public bool PostMode { get; set; }
-
+    
     [JsonProperty("s")]
     public Statistics Stats { get; set; }
 

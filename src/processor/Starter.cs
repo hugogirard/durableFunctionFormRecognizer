@@ -35,7 +35,7 @@ public class Starter
         for (int i = 0; i < processorOptions.NbPartitions; i++)
         {
             instanceId = await starter.StartNewAsync<ProcessorInput>("Processor", 
-                new ProcessorInput() { PartitionId = i, PostMode = true });
+                new ProcessorInput() { PartitionId = i });
             log.LogInformation($"Started Processor orchestration with ID = '{instanceId}'.");
         }        
 
