@@ -1,0 +1,89 @@
+﻿@page "/stats"
+
+@using System.Threading
+@using System.Net.Http.Json 
+@using Microsoft.Extensions.Configuration
+
+@inject HttpClient http
+@inject IConfiguration config
+
+<h1>Stats</h1>
+
+<p>Current work rate is @workrate docs/sec</p>
+
+@if (partitions == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Partition #</th>
+                <th>Total processed</th>
+                <th>Total failed</th>
+                <th>Total transient failures</th>
+                <th>Last start time</th>
+                <th>Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(int i=0; i<partitions.Length; i++)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@partitions[i].Stats.TotalProcessed</td>
+                    <td>@partitions[i].Stats.TotalFailed</td>
+                    <td>@partitions[i].Stats.TotalTransientFailures</td>
+                    <td>@partitions[i].Stats.LatestRunStartTime.ToLocalTime()</td>
+                    <td>@(DateTime.Now - partitions[i].Stats.LatestRunStartTime.ToLocalTime())</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td>@partitions.Sum(x => x.Stats.TotalProcessed)</td>
+                <td>@partitions.Sum(x => x.Stats.TotalFailed)</td>
+                <td>@partitions.Sum(x => x.Stats.TotalTransientFailures)</td>
+                   <td></td>
+                </tr>
+        </tfoot>
+
+    </table>
+}
+
+@code {
+    private Timer timer;
+    private DateTime start;
+    private Int64 total;
+    private ProcessorInput[] partitions;
+    private int workrate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            timer = new Timer(new TimerCallback(async _ => await Reload()), null, 2000, 2000);
+        }
+    }
+
+    private async Task Reload()
+    {
+        partitions = await http.GetFromJsonAsync<ProcessorInput[]>(config["EndpointUrl"]);
+        Int64 currentTotal = partitions.Sum(x => x.Stats.TotalProcessed + x.Stats.TotalFailed);
+        if (start == DateTime.MinValue)
+        {
+            start = DateTime.Now;
+            total = currentTotal;
+        }
+        workrate = (int)((currentTotal-total) / (DateTime.Now - start).TotalSeconds);
+        await InvokeAsync(() => StateHasChanged());
+    }
+}
