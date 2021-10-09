@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Net.Http;
 
-namespace viewer
+namespace Viewer
 {
     public class Startup
     {

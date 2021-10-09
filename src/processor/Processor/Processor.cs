@@ -31,8 +31,6 @@ public class Processor
     {
         var input = context.GetInput<ProcessorInput>();
 
-        input.Stats.LatestRunStartTime = context.CurrentUtcDateTime;
-
         var entityId = BlobInfoEntity.GetEntityId(input.PartitionId);
         var blobs = await context.CallEntityAsync<IEnumerable<BlobInfo>>(entityId, "Reserve", options.PartitionSize);
 

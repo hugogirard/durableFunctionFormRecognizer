@@ -11,8 +11,6 @@ public class ProcessorInput
         public Int64 TotalFailed { get; set; }
         [JsonProperty("t")]
         public Int64 TotalTransientFailures { get; set; }
-        [JsonProperty("s")]
-        public DateTime LatestRunStartTime { get; set; }
     }
 
     [JsonProperty("i")]

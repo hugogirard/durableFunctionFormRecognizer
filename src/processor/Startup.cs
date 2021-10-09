@@ -42,9 +42,10 @@ public class Startup : FunctionsStartup
         //     blobContainerName, new BlobServiceClient(storageAccountConnectionString)));
 
         builder.Services.AddHttpClient();
-        var serviceUrl = GetConfigValue<string>(config, "ServiceUrl", throwIfMissing: true);
+        var serviceUrl = GetConfigValue<string>(config, "ServiceUrl", null);
+        var serviceUri = String.IsNullOrEmpty(serviceUrl) ? null : new Uri(serviceUrl);
          builder.Services.AddSingleton<IFormRecognizerService>(sp => new FormRecognizerMockService(
-             new Uri(serviceUrl), sp.GetService<IHttpClientFactory>()));
+             serviceUri, sp.GetService<IHttpClientFactory>()));
         // builder.Services.AddSingleton<IFormRecognizerService>(_ => {
         //     var formRecognizerClientOptions = new FormRecognizerClientOptions();
         //     formRecognizerClientOptions.Retry.MaxRetries = 0;
@@ -52,19 +53,20 @@ public class Startup : FunctionsStartup
         //         new Azure.AzureKeyCredential(formRecognizerKey), formRecognizerClientOptions));
         // });
 
-        builder.Services.AddSingleton<ICosmosService>(_ => {
-            var client = new CosmosClient(cosmosEndpoint, cosmosAuthKey, new CosmosClientOptions() { AllowBulkExecution = true });
-            return new CosmosService(client.GetContainer(cosmosDatabaseId, cosmosContainerId), 100 / nbPartitions);
-        });
+        builder.Services.AddSingleton<ICosmosService>(_ => new CosmosMockService());
+        // builder.Services.AddSingleton<ICosmosService>(_ => {
+        //     var client = new CosmosClient(cosmosEndpoint, cosmosAuthKey, new CosmosClientOptions() { AllowBulkExecution = true });
+        //     return new CosmosService(client.GetContainer(cosmosDatabaseId, cosmosContainerId), 100 / nbPartitions);
+        // });
 
         var partitionSize = (int)Math.Ceiling((double)batchSize / nbPartitions);
 
-        builder.Services.AddSingleton<CollectorOptions>((_) => 
+        builder.Services.AddSingleton<CollectorOptions>(_ => 
             new CollectorOptions() { BatchSize = batchSize, MinBacklogSize = minBacklogSize, 
                                      NbPartitions = nbPartitions, PartitionSize = partitionSize, CollectDelay = collectDelay,
                                      BlobContainerName = blobContainerName});
         
-        builder.Services.AddSingleton<ProcessorOptions>((_) =>
+        builder.Services.AddSingleton<ProcessorOptions>(_ =>
             new ProcessorOptions() { NbPartitions =nbPartitions, PartitionSize = partitionSize, NoDataDelay = noDataDelay, MinProcessingTime = minProcessingTime,
                                      BlobContainerName = blobContainerName, MaxRetries = maxRetries, FormRecognizerModelId = formRecognizerModelId }); 
     }

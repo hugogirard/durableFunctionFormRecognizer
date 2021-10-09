@@ -28,8 +28,11 @@ public class FormRecognizerMockService : IFormRecognizerService
             return null;
         }      
 
-        var client = httpClientFactory.CreateClient();
-        var result = await client.GetAsync(serviceUrl);
+        if (serviceUrl != null)
+        {
+            var client = httpClientFactory.CreateClient();
+            var result = await client.GetAsync(serviceUrl);
+        }
         return Guid.NewGuid().ToString();
     }    
 
@@ -45,8 +48,11 @@ public class FormRecognizerMockService : IFormRecognizerService
             return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.TransientFailure };
         }     
 
-        var client = httpClientFactory.CreateClient();
-        var result = await client.GetAsync(serviceUrl);
+        if (serviceUrl != null)
+        {
+            var client = httpClientFactory.CreateClient();
+            var result = await client.GetAsync(serviceUrl);
+        }
         return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.CompletedWithoutResult };
     }
 }

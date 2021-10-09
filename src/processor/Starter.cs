@@ -100,25 +100,33 @@ public class Starter
 
     [FunctionName("Diagnostics")]
     public async Task<IActionResult> HttpDiagnostics(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "patch", "delete")] HttpRequestMessage req,
         [DurableClient] IDurableOrchestrationClient orchestrationClient,
         ExecutionContext context,
         ILogger log)
     {
-        var instances = await orchestrationClient.ListInstancesAsync(new OrchestrationStatusQueryCondition() {  
-            RuntimeStatus = new OrchestrationRuntimeStatus[] { OrchestrationRuntimeStatus.Running },
-           }, CancellationToken.None);
-
-        var inputs = new List<ProcessorInput>();
-        foreach(var instance in instances.DurableOrchestrationState)
+        if (req.Method == HttpMethod.Post)
         {
-            if (instance.Name == "Processor")
-            {
-                var input = instance.Input.ToObject<ProcessorInput>();
-                inputs.Add(input);
-            }
+            var instanceId = await req.Content.ReadAsStringAsync();
+            await orchestrationClient.RestartAsync(instanceId);
         }
 
-        return new JsonResult(inputs);
+        if (req.Method == HttpMethod.Patch)
+        {
+            var instanceId = await req.Content.ReadAsStringAsync();
+            await orchestrationClient.TerminateAsync(instanceId, "Termination requested by user");
+        }
+
+        if (req.Method == HttpMethod.Delete)
+        {
+            var instanceId = await req.Content.ReadAsStringAsync();
+            await orchestrationClient.PurgeInstanceHistoryAsync(instanceId);
+        }
+
+        var instances = await orchestrationClient.ListInstancesAsync(
+            new OrchestrationStatusQueryCondition(), CancellationToken.None);
+
+        return new JsonResult(instances.DurableOrchestrationState.Where(
+            x => x.Name == "Collector" || x.Name == "Processor"));
     }
 }
