@@ -71,3 +71,5 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-04-01' = {
     }  
   }
 }
+
+output vmName string = vmName
