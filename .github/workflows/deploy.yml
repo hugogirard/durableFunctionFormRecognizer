@@ -82,7 +82,7 @@ jobs:
             Set-AzVMCustomScriptExtension -ResourceGroupName myResourceGroup `
                 -VMName ${{ needs.create-azure-resources.outputs.vmName }} `
                 -Location ${{ github.event.inputs.location }} `
-                -FileUri https://raw.githubusercontent.com/azure-samples/storage-dotnet-perf-scale-app/master/setup_vm.ps1 `
+                -FileUri https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/scripts/setup_vm.ps1 `
                 -Run 'setup_vm.ps1' `
                 -Name SetupVmScript        
        
