@@ -15,6 +15,9 @@ public class ProcessorInput
 
     [JsonProperty("i")]
     public int PartitionId { get; set; }
+
+    [JsonProperty("p")]
+    public string PreviousInstanceId { get; set; }
     
     [JsonProperty("s")]
     public Statistics Stats { get; set; }

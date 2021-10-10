@@ -27,43 +27,65 @@ public class Processor
 
    [FunctionName("Processor")]
     public async Task RunOrchestrator(
-        [OrchestrationTrigger] IDurableOrchestrationContext context)
+        [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
     {
+        log = context.CreateReplaySafeLogger(log);
         var input = context.GetInput<ProcessorInput>();
+        var prefix = $"[Processor:{input.PartitionId}]";
 
-        var entityId = BlobInfoEntity.GetEntityId(input.PartitionId);
-        var blobs = await context.CallEntityAsync<IEnumerable<BlobInfo>>(entityId, "Reserve", options.PartitionSize);
-
-        if (blobs.Any())
+        try
         {
-            entityId = BlobInfoEntity.GetEntityId(input.PartitionId);
-            blobs = await context.CallActivityAsync<IEnumerable<BlobInfo>>("Processor_ProcessPartition", 
-                new ProcessInput() { PartitionId = input.PartitionId, Blobs = blobs });
-            
-            await context.CallActivityAsync("Processor_UpdateState", blobs);
+            var entityId = BlobInfoEntity.GetEntityId(input.PartitionId);
+            log.LogInformation($"{prefix} Reserving blobs...");
+            var blobs = await context.CallEntityAsync<IEnumerable<BlobInfo>>(entityId, "Reserve", options.PartitionSize);
 
-            input.Stats.TotalProcessed += blobs.Count(x => x.State == BlobInfo.ProcessState.Processed);
-            input.Stats.TotalFailed += blobs.Count(x => x.State == BlobInfo.ProcessState.Failed);
-            input.Stats.TotalTransientFailures += blobs.Sum(x => x.TransientFailureCount);                
+            if (blobs.Any())
+            {
+                log.LogInformation($"{prefix} Processing blobs...");
+                blobs = await context.CallActivityAsync<IEnumerable<BlobInfo>>("Processor_ProcessPartition", 
+                    new ProcessInput() { PartitionId = input.PartitionId, Blobs = blobs });
+                
+                log.LogInformation($"{prefix} Updating blob states...");
+                await context.CallActivityAsync("Processor_UpdateState", blobs);
+
+                // Note: This can create a race condition where the Collecter adds back blobs 
+                // already processed but the risk is low
+                log.LogInformation($"{prefix} Clearing blob reservation...");
+                await context.CallEntityAsync(entityId, "ClearReserved");
+
+                input.Stats.TotalProcessed += blobs.Count(x => x.State == BlobInfo.ProcessState.Processed);
+                input.Stats.TotalFailed += blobs.Count(x => x.State == BlobInfo.ProcessState.Failed);
+                input.Stats.TotalTransientFailures += blobs.Sum(x => x.TransientFailureCount);                
+            }
+            else
+            {
+                log.LogInformation($"{prefix} No blobs to process, going to sleep...");
+                await context.CreateTimer(context.CurrentUtcDateTime.Add(options.NoDataDelay), CancellationToken.None);
+            }
+
+            log.LogInformation($"{prefix} Starting new instance ...");
+            context.ContinueAsNew(input);
         }
-        else
+        catch(Exception ex)
         {
-            await context.CreateTimer(context.CurrentUtcDateTime.Add(options.NoDataDelay), CancellationToken.None);
+            log.LogError($"{prefix} Processor failed with the following exception: {ex.ToString()}");
+            input.PreviousInstanceId = context.InstanceId;
+            await context.CallActivityAsync("Processor_Restart", input);
+            throw;
         }
-
-        context.ContinueAsNew(input);
     }
 
     [FunctionName("Processor_ProcessPartition")]
     public async Task<IEnumerable<BlobInfo>> ProcessPartition([ActivityTrigger] ProcessInput input, ILogger log)
     {
         var postMode = true;
+        var prefix = $"[Processor:{input.PartitionId}]";
         var processBlobInfos = input.Blobs.ToDictionary(x => x.BlobName, x => new ProcessBlobInfo() { Blob = x });
 
         do
         {
-            if(postMode) log.LogInformation($"Submitting documents to Form Recognizer for partition {input.PartitionId}...");
-            else log.LogInformation($"Getting Form Recognizer results for partition {input.PartitionId}...");
+            if(postMode) log.LogInformation($"{prefix} Submitting documents to Form Recognizer...");
+            else log.LogInformation($"{prefix} Getting Form Recognizer results...");
 
             for(int i=0; i<options.MaxRetries; i++)
             {
@@ -83,7 +105,7 @@ public class Processor
         }
         while (!postMode);
  
-        log.LogInformation($"Saving documents for partition {input.PartitionId}...");
+        log.LogInformation($"{prefix} Saving documentsa to Cosmos...");
         await cosmosService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
                 Id = x.Blob.BlobName,
                 State = x.Blob.State.ToString(),
@@ -93,13 +115,6 @@ public class Processor
             }));
 
         return processBlobInfos.Values.Select(x => x.Blob);
-    }
-
-    [FunctionName("Processor_UpdateState")]
-    public async Task UpdateState([ActivityTrigger] IEnumerable<BlobInfo> blobs, ILogger log)
-    {
-        log.LogInformation($"Updating state in storage...");
-        await blobStorageService.UpdateState(blobs);
     }
 
     private async Task<ProcessBlobInfo> ProcessBlob(ProcessBlobInfo processBlobInfo, bool postMode, ILogger log)
@@ -141,5 +156,19 @@ public class Processor
             processBlobInfo.Blob.State = BlobInfo.ProcessState.Failed;
             return processBlobInfo;
         }
+    }
+
+    [FunctionName("Processor_UpdateState")]
+    public async Task UpdateState([ActivityTrigger] IEnumerable<BlobInfo> blobs, ILogger log)
+    {
+        await blobStorageService.UpdateState(blobs);
+    }
+
+    [FunctionName("Processor_Restart")]
+    public async Task Restart([ActivityTrigger] ProcessorInput input, [DurableClient] IDurableOrchestrationClient client, ILogger log)
+    {
+        var prefix = $"[Processor:{input.PartitionId}]";
+        log.LogWarning($"{prefix} Restarting processor...");
+        await client.StartNewAsync<ProcessorInput>("Processor", input);
     }
 }

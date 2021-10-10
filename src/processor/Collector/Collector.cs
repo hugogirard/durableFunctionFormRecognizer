@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -17,29 +18,45 @@ public class Collector
 
     [FunctionName("Collector")]
     public async Task RunOrchestrator(
-        [OrchestrationTrigger] IDurableOrchestrationContext context)
+        [OrchestrationTrigger] IDurableOrchestrationContext context, ILogger log)
     {
-        var continuationToken = context.GetInput<string>();
+        log = context.CreateReplaySafeLogger(log);
+        var input = context.GetInput<CollectorInput>() ?? new CollectorInput();
 
-        var count = await context.CallActivityAsync<int>("Collector_Count", options.NbPartitions);
-
-        if (count < options.MinBacklogSize)
+        try
         {
-            var output = await context.CallActivityAsync<CollectorOutput>("Collector_Collect", continuationToken);
-            continuationToken = output.ContinuationToken;
+            log.LogInformation($"[Collector] Counting blobs...");
+            var count = await context.CallActivityAsync<int>("Collector_Count", options.NbPartitions);
+            log.LogInformation($"[Collector] Current blob count is {count}");
 
-            int i = 0;
-            foreach (var blobInfoEntity in output.Blobs.Partition(options.PartitionSize))
+            if (count < options.MinBacklogSize)
             {
-                var entityId = BlobInfoEntity.GetEntityId(i);
-                context.SignalEntity(entityId, "AddIfNew", blobInfoEntity);
-                i++;
-            }
-        }
+                log.LogInformation($"[Collector] Collecting more blobs...");
+                var output = await context.CallActivityAsync<CollectorOutput>("Collector_Collect", input.ContinuationToken);
+                input.ContinuationToken = output.ContinuationToken;
 
-        await context.CreateTimer(context.CurrentUtcDateTime.Add(options.CollectDelay), CancellationToken.None);
-        
-        context.ContinueAsNew(continuationToken);
+                int i = 0;
+                log.LogInformation($"[Collector] Splitting blobs into partitions...");
+                foreach (var blobInfoEntity in output.Blobs.Partition(options.PartitionSize))
+                {
+                    var entityId = BlobInfoEntity.GetEntityId(i);
+                    context.SignalEntity(entityId, "AddIfNew", blobInfoEntity);
+                    i++;
+                }
+            }
+
+            log.LogInformation($"[Collector] Going to sleep...");
+            await context.CreateTimer(context.CurrentUtcDateTime.Add(options.CollectDelay), CancellationToken.None);
+            
+            context.ContinueAsNew(input);
+        }
+        catch (Exception ex)
+        {
+            log.LogError($"[Collector] Collector failed with the following exception: {ex.ToString()}");
+            input.PreviousInstanceId = context.InstanceId;
+            await context.CallActivityAsync("Collector_Restart", input);
+            throw;
+        }
     }
 
     [FunctionName("Collector_Count")]
@@ -61,7 +78,13 @@ public class Collector
     [FunctionName("Collector_Collect")]
     public async Task<CollectorOutput> Collect([ActivityTrigger] string continuationToken, ILogger log)
     {
-        log.LogInformation("Collecting blobs...");
         return await blobStorageService.GetUnprocessedBlobs(options.BatchSize, continuationToken);
+    }
+
+    [FunctionName("Collector_Restart")]
+    public async Task Restart([ActivityTrigger] CollectorInput input, [DurableClient] IDurableOrchestrationClient client, ILogger log)
+    {
+        log.LogWarning($"[Collector] Restarting collector...");
+        await client.StartNewAsync<CollectorInput>("Collector", input);
     }
 }

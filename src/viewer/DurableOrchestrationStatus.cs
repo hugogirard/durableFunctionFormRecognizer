@@ -8,41 +8,41 @@ using System.Text.Json;
     //     An external client can fetch the status of an orchestration instance using Microsoft.Azure.WebJobs.Extensions.DurableTask.IDurableOrchestrationClient.GetStatusAsync(System.String,System.Boolean,System.Boolean,System.Boolean).
     public class DurableOrchestrationStatus
     {
-public enum OrchestrationRuntimeStatus
-    {
-        //
-        // Summary:
-        //     The status of the orchestration could not be determined.
-        Unknown = -1,
-        //
-        // Summary:
-        //     The orchestration is running (it may be actively running or waiting for input).
-        Running = 0,
-        //
-        // Summary:
-        //     The orchestration ran to completion.
-        Completed = 1,
-        //
-        // Summary:
-        //     The orchestration completed with ContinueAsNew as is in the process of restarting.
-        ContinuedAsNew = 2,
-        //
-        // Summary:
-        //     The orchestration failed with an error.
-        Failed = 3,
-        //
-        // Summary:
-        //     The orchestration was canceled.
-        Canceled = 4,
-        //
-        // Summary:
-        //     The orchestration was terminated via an API call.
-        Terminated = 5,
-        //
-        // Summary:
-        //     The orchestration was scheduled but has not yet started.
-        Pending = 6
-    }
+        public enum OrchestrationRuntimeStatus
+        {
+            //
+            // Summary:
+            //     The status of the orchestration could not be determined.
+            Unknown = -1,
+            //
+            // Summary:
+            //     The orchestration is running (it may be actively running or waiting for input).
+            Running = 0,
+            //
+            // Summary:
+            //     The orchestration ran to completion.
+            Completed = 1,
+            //
+            // Summary:
+            //     The orchestration completed with ContinueAsNew as is in the process of restarting.
+            ContinuedAsNew = 2,
+            //
+            // Summary:
+            //     The orchestration failed with an error.
+            Failed = 3,
+            //
+            // Summary:
+            //     The orchestration was canceled.
+            Canceled = 4,
+            //
+            // Summary:
+            //     The orchestration was terminated via an API call.
+            Terminated = 5,
+            //
+            // Summary:
+            //     The orchestration was scheduled but has not yet started.
+            Pending = 6
+        }
 
         //
         // Summary:
@@ -127,4 +127,6 @@ public enum OrchestrationRuntimeStatus
         //     The history log can be large and is therefore null by default. It is populated
         //     only when explicitly requested in the call to Microsoft.Azure.WebJobs.Extensions.DurableTask.IDurableOrchestrationClient.GetStatusAsync(System.String,System.Boolean,System.Boolean,System.Boolean).
         // public JArray History { get; set; }
+
+        public T GetInputObject<T>() => JsonSerializer.Deserialize<T>(Input.GetRawText());
     }

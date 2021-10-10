@@ -10,41 +10,50 @@ public class BlobInfoEntity
 {
     public BlobInfoEntity()
     {
-        Blobs = new List<BlobInfo>();
+        // Using a dictionary to reduce serialization size
+        Blobs = new Dictionary<bool, List<BlobInfo>>();
+        Blobs[true] = new List<BlobInfo>();
+        Blobs[false] = new List<BlobInfo>();
     }
 
     [JsonProperty("b")]
-    public List<BlobInfo> Blobs { get; set; }
+    public Dictionary<bool, List<BlobInfo>> Blobs { get; set; }
+
+    private List<BlobInfo> Reserved => Blobs[true];
+    private List<BlobInfo> Unreserved => Blobs[false];
+    private IEnumerable<BlobInfo> AllBlobs => Unreserved.Concat(Reserved); 
 
     public void Clear() => Blobs.Clear();
 
-    public int Count() => Blobs.Count;
+    public int Count() => Reserved.Count + Unreserved.Count;
     
     public IEnumerable<BlobInfo> Reserve(int maximumAmount)
     {
-        if (Blobs.Count() == 0) return Enumerable.Empty<BlobInfo>();
-
-        foreach(var blob in Blobs.Where(x => x.Reserved).ToArray())
+        if (!Reserved.Any())
         {
-            Blobs.Remove(blob);
-        }        
+            if (!Unreserved.Any()) return Enumerable.Empty<BlobInfo>();             
 
-        var blobs = Blobs.Take(Math.Min(Blobs.Count, maximumAmount));
-        foreach(var blob in blobs)
-        {
-            blob.Reserved = true;
+            var amount = Math.Min(Unreserved.Count, maximumAmount);
+            Reserved.AddRange(Unreserved.Take(amount));
+            Unreserved.RemoveRange(0, amount);
         }
-        return blobs;
+
+        return Reserved;
+    }
+
+    public void ClearReserved()
+    {
+        Reserved.Clear();
     }
 
     public void AddIfNew(IEnumerable<BlobInfo> blobs) 
     {
-        var blobIndex = Blobs.ToDictionary(x => x.BlobName);
+        var blobIndex = AllBlobs.ToDictionary(x => x.BlobName);
 
         foreach(var blob in blobs)
         {
             if (!blobIndex.ContainsKey(blob.BlobName))
-                Blobs.Add(blob);
+                Unreserved.Add(blob);
         }
     }
 

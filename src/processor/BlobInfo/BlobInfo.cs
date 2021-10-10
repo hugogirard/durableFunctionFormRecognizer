@@ -15,9 +15,6 @@ public class BlobInfo
     [JsonProperty("s")]
     public ProcessState State { get; set; }
 
-    [JsonProperty("r")]
-    public bool Reserved { get; set; } 
-
     [JsonProperty("f")]
     public int TransientFailureCount { get; set; }    
 }
