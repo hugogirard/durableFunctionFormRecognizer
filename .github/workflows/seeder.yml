@@ -1,44 +1,44 @@
-name: Deploy seeder function
-on:
- push:
-   branches:
-     - 'main'
-   paths:
-     - 'src/seederFunction/*'
- workflow_dispatch:
+# name: Deploy seeder function
+# on:
+#  push:
+#    branches:
+#      - 'main'
+#    paths:
+#      - 'src/seederFunction/*'
+#  workflow_dispatch:
 
-env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction'
+# env:
+#   AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction'
 
-jobs:
-  create-azure-resources:
+# jobs:
+#   create-azure-resources:
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    steps:
+#     steps:
 
-      - uses: actions/checkout@v2
+#       - uses: actions/checkout@v2
 
-      - name: Azure Login
-        uses: Azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}  
+#       - name: Azure Login
+#         uses: Azure/login@v1
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}  
 
-      - name: Setup DotNet 3.1.X Environment
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x'
+#       - name: Setup DotNet 3.1.X Environment
+#         uses: actions/setup-dotnet@v1
+#         with:
+#           dotnet-version: '3.1.x'
 
-      - name: 'Building with Dotnet'
-        shell: bash
-        run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          dotnet build --configuration Release --output ./output
-          popd
+#       - name: 'Building with Dotnet'
+#         shell: bash
+#         run: |
+#           pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+#           dotnet build --configuration Release --output ./output
+#           popd
 
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1
-        id: fa
-        with:
-          app-name: ${{ secrets.FUNCTION_SEEDER_NAME }}
-          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'                
+#       - name: 'Run Azure Functions Action'
+#         uses: Azure/functions-action@v1
+#         id: fa
+#         with:
+#           app-name: ${{ secrets.FUNCTION_SEEDER_NAME }}
+#           package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'                
