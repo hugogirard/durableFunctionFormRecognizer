@@ -1,0 +1,190 @@
+﻿@page "/"
+
+@using System.Threading
+@using System.Net.Http.Json 
+@using Microsoft.Extensions.Configuration
+
+@inject HttpClient http
+@inject IConfiguration config
+
+<h1>Diagnostics</h1>
+
+<p>Current work rate is @workrate.ToString("0.0") docs/sec</p>
+
+<p>
+    <input id="hideTerminated" type="checkbox" checked="@hideTerminated" @onchange="@(async e => await ToggleTerminated((bool)e.Value))" />
+    <label for="hideTerminated">Hide terminated instances</label>
+    <input id="hideFailed" type="checkbox" checked="@hideFailed" @onchange="@(async e => await ToggleFailed((bool)e.Value))" />
+    <label for="hideFailed">Hide failed instances</label>
+</p>
+
+@if (collectorInstances == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Instance Id</th>
+                <th>Instance Status</th>
+                <th>Created Time</th>
+                <th>Last Updated Time</th>
+                <th>Duration</th>
+                <th>Output</th>
+                <th>Previous Instance Id</th>
+                <th>Action</th>
+                <th>Partition #</th>
+                <th>Total Processed</th>
+                <th>Total Failed</th>
+                <th>Total Transient Failures</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var collectorInstance in collectorInstances)
+            {
+                var input = collectorInstance.GetInputObject<CollectorInput>();
+
+                <tr>
+                    <td>@collectorInstance.Name</td>
+                    <td>@collectorInstance.InstanceId</td>
+                    <td>@collectorInstance.RuntimeStatus</td>
+                    <td>@collectorInstance.CreatedTime.ToLocalTime()</td>
+                    <td>@collectorInstance.LastUpdatedTime.ToLocalTime()</td>
+                    <td>@(DateTime.Now - collectorInstance.CreatedTime.ToLocalTime())</td>
+                    <td>@collectorInstance.Output.GetRawText()</td>
+                    <td>@input.PreviousInstanceId</td>
+                    <td>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@collectorInstance.InstanceId))">Restart</a>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@collectorInstance.InstanceId))">Terminate</a>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Purge(@collectorInstance.InstanceId))">Purge</a>
+                    </td>
+                </tr>
+            }
+            @foreach(var processorInstance in processorInstances.OrderBy(x => x.GetInputObject<ProcessorInput>().PartitionId))
+            {
+                var input = processorInstance.GetInputObject<ProcessorInput>();
+
+                <tr>
+                    <td>@processorInstance.Name</td>
+                    <td>@processorInstance.InstanceId</td>
+                    <td>@processorInstance.RuntimeStatus</td>
+                    <td>@processorInstance.CreatedTime.ToLocalTime()</td>
+                    <td>@processorInstance.LastUpdatedTime.ToLocalTime()</td>
+                    <td>@(DateTime.Now - processorInstance.CreatedTime.ToLocalTime())</td>
+                    <td>@processorInstance.Output.GetRawText()</td>
+                    <td>@input.PreviousInstanceId</td>
+                    <td>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@processorInstance.InstanceId))">Restart</a>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@processorInstance.InstanceId))">Terminate</a>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Purge(@processorInstance.InstanceId))">Purge</a>
+                    </td>
+                    <td>@input.PartitionId</td>
+                    <td>@input.Stats.TotalProcessed</td>
+                    <td>@input.Stats.TotalFailed</td>
+                    <td>@input.Stats.TotalTransientFailures</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>               
+                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed + x.Stats.TotalProcessed)</td>
+                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed + x.Stats.TotalFailed)</td>
+                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed + x.Stats.TotalTransientFailures)</td>                                                
+                </tr>
+        </tfoot>
+
+    </table>
+}
+
+@code {
+    private Timer timer;
+    private DateTime start;
+    private Int64 total;
+    private DurableOrchestrationStatus[] processorInstances;
+    private DurableOrchestrationStatus[] collectorInstances;
+    private double workrate;
+    private bool hideTerminated = true;
+    private bool hideFailed = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            timer = new Timer(new TimerCallback(async _ => await Reload()), null, 2000, 2000);
+        }
+    }
+
+    private async Task Reload()
+    {
+        var instances = await http.GetFromJsonAsync<DurableOrchestrationStatus[]>(config["EndpointUrl"]);
+        collectorInstances = instances.Where(x => x.Name == "Collector" && 
+            (!hideTerminated ||
+            x.RuntimeStatus != DurableOrchestrationStatus.OrchestrationRuntimeStatus.Terminated) &&
+            (!hideFailed||
+            x.RuntimeStatus != DurableOrchestrationStatus.OrchestrationRuntimeStatus.Failed)).ToArray();
+        processorInstances = instances.Where(x => x.Name == "Processor" && 
+            (!hideTerminated ||
+            x.RuntimeStatus != DurableOrchestrationStatus.OrchestrationRuntimeStatus.Terminated) &&
+            (!hideFailed||
+            x.RuntimeStatus != DurableOrchestrationStatus.OrchestrationRuntimeStatus.Failed)).ToArray();
+        Int64 currentTotal = processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).
+            Sum(x => x.Stats.TotalProcessed + x.Stats.TotalFailed);
+        if (start == DateTime.MinValue)
+        {
+            start = DateTime.Now;
+            total = currentTotal;
+        }
+        workrate = (currentTotal-total) / (DateTime.Now - start).TotalSeconds;
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    private async Task ToggleTerminated(bool hideTerminated)
+    {
+        this.hideTerminated = hideTerminated;
+        await Reload();
+    }
+
+    private async Task ToggleFailed(bool hideFailed)
+    {
+        this.hideFailed = hideFailed;
+        await Reload();
+    }
+
+    private async Task Restart(string instanceId)
+    {
+        await http.PostAsync(config["EndpointUrl"], new StringContent(instanceId));
+        await Reload();
+    }
+
+    private async Task Terminate(string instanceId)
+    {
+        await http.PatchAsync(config["EndpointUrl"], new StringContent(instanceId));
+        await Reload();
+    }
+
+    private async Task Purge(string instanceId)
+    {
+        var message = new HttpRequestMessage(HttpMethod.Delete, config["EndpointUrl"]);
+        message.Content = new StringContent(instanceId);
+        await http.SendAsync(message);
+        await Reload();
+    }
+}
