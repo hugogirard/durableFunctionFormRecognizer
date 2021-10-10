@@ -1,4 +1,11 @@
 param location string
+param addressSpaceSubnet string
+param addressSpaceVnet string
+@secure()
+param adminUsername string
+
+@secure()
+param adminPassword string
 
 var suffix = uniqueString(resourceGroup().id)
 
@@ -26,20 +33,23 @@ module storage 'modules/storage/storage.bicep' = {
   }
 }
 
-module functionSeeder 'modules/functions/seeder.bicep' = {
-  name: 'functionSeeder'
+module vnet 'modules/network/vnet.bicep' = {
+  name: 'vnet'
+  params: {
+    location: location
+    addressSpaceVnet: addressSpaceVnet
+    addressSpaceSubnet: addressSpaceSubnet
+  }
+}
+
+module compute 'modules/compute/windows.bicep' = {
+  name: 'compute'
   params: {
     location: location
     suffix: suffix
-    appInsightCnxString: insight.outputs.appInsightCnxString
-    appInsightKey: insight.outputs.appInsightKey
-    strAccountApiVersion: storage.outputs.strFunctionApiVersion
-    strAccountId: storage.outputs.strFunctionId
-    strAccountName: storage.outputs.strFunctionName
-    strAccountDocumentName: storage.outputs.strDocumentName
-    strAccountDocumentId: storage.outputs.strDocumentId
-    strAccountDocumentApiVersion: storage.outputs.strDocumentApiVersion
-    appServiceId: functionProcessor.outputs.serverFarmId
+    subnetId: vnet.outputs.subnetId
+    adminUsername: adminUsername
+    adminPassword: adminPassword
   }
 }
 
@@ -56,4 +66,4 @@ module functionProcessor 'modules/functions/processor.bicep' = {
   }
 }
 
-output seederFunctionName string = functionSeeder.outputs.functionSeederName
+
