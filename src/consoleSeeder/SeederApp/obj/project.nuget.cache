@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "VLvm1zTnoaeTrDD7ybCPlLr6wRt2XYLiFZl99vmkkwc9yEqjhypi8e1w76OZl9V5j1/XDMAtr+6ixEn6b9a7mw==",
+  "dgSpecHash": "T9RHhniO8TQRjV5kO6QrvpQBdIFbMsEGnRMnlyibFSYoLVqmv7EQ1ZAQ5k29KsX5hl86QMDpxgPExDV5278WGg==",
   "success": true,
   "projectFilePath": "C:\\github\\durableFunctionFormRecognizer\\src\\consoleSeeder\\SeederApp\\SeederApp.csproj",
   "expectedPackageFiles": [
@@ -15,7 +15,8 @@
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder\\system.numerics.vectors\\4.5.0\\system.numerics.vectors.4.5.0.nupkg.sha512",
     "C:\\Users\\hugirard\\.nuget\\packages\\system.text.encodings.web\\4.7.2\\system.text.encodings.web.4.7.2.nupkg.sha512",
     "C:\\Users\\hugirard\\.nuget\\packages\\system.text.json\\4.6.0\\system.text.json.4.6.0.nupkg.sha512",
-    "C:\\Users\\hugirard\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.2\\system.threading.tasks.extensions.4.5.2.nupkg.sha512"
+    "C:\\Users\\hugirard\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.2\\system.threading.tasks.extensions.4.5.2.nupkg.sha512",
+    "C:\\Users\\hugirard\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\3.1.18\\microsoft.netcore.app.host.win-x64.3.1.18.nupkg.sha512"
   ],
   "logs": []
 }
