@@ -8,7 +8,7 @@ param adminUsername string
 @secure()
 param adminPassword string
 
-var vmName = 'seeder-${suffix}'
+var vmName = 'seeder'
 
 resource pip 'Microsoft.Network/publicIPAddresses@2021-02-01' = {
   name: 'pip-seeder-${suffix}'
