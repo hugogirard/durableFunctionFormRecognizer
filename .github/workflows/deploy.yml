@@ -27,6 +27,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    outputs:
+      vmName: ${{ steps.armDeployment.outputs.vmName }}
+
     steps:
 
       - uses: actions/checkout@v2
@@ -54,3 +57,34 @@ jobs:
           resourceGroupName: ${{ github.event.inputs.resourceGroupName }}
           template: ./bicep/main.json
           parameters: location=${{ github.event.inputs.location }} addressSpaceVnet=${{ github.event.inputs.addressSpaceVnet }} addressSpaceSubnet=${{ github.event.inputs.addressSpaceSubnet }} adminUsername=${{ secrets.ADMIN_USERNAME }} adminPassword=${{ secrets.ADMIN_PASSWORD }}
+
+  configure-vm:
+     
+     needs: create-azure-resources
+
+     runs-on: windows-latest
+
+     steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Run PowerShell script
+        uses: azure/powershell@v1
+        with:
+          azPSVersion: '3.1.0'
+          inlineScript: |
+            Set-AzVMCustomScriptExtension -ResourceGroupName myResourceGroup `
+                -VMName ${{ needs.create-azure-resources.outputs.vmName }} `
+                -Location ${{ github.event.inputs.location }} `
+                -FileUri https://raw.githubusercontent.com/azure-samples/storage-dotnet-perf-scale-app/master/setup_vm.ps1 `
+                -Run 'setup_vm.ps1' `
+                -Name SetupVmScript        
+       
+
+
