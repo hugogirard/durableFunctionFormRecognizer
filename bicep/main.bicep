@@ -66,4 +66,4 @@ module functionProcessor 'modules/functions/processor.bicep' = {
   }
 }
 
-
+output vmName string = compute.outputs.vmName
