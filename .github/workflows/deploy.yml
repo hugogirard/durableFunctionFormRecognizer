@@ -79,7 +79,7 @@ jobs:
         with:
           azPSVersion: '3.1.0'
           inlineScript: |
-            Set-AzVMCustomScriptExtension -ResourceGroupName myResourceGroup `
+            Set-AzVMCustomScriptExtension -ResourceGroupName ${{ github.event.inputs.resourceGroupName }} `
                 -VMName ${{ needs.create-azure-resources.outputs.vmName }} `
                 -Location ${{ github.event.inputs.location }} `
                 -FileUri https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/scripts/setup_vm.ps1 `
