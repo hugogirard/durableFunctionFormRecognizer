@@ -5,7 +5,17 @@
       "ProjectGuid": "e068a115-0e1a-469a-8e3c-eecdcce87407",
       "DisplayName": "Seeder",
       "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "7b3e088f-9b95-4d32-9e5b-9802c129ecb1": {
+      "ProjectGuid": "7b3e088f-9b95-4d32-9e5b-9802c129ecb1",
+      "DisplayName": "SeederApp",
+      "ColorIndex": 1
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 2
 }
