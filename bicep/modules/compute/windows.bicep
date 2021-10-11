@@ -42,7 +42,10 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-02-01' = {
 resource vm 'Microsoft.Compute/virtualMachines@2021-04-01' = {
   name:  vmName
   location: location
-  properties: {
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {    
     hardwareProfile: {
       vmSize: 'Standard_D4s_v3'
     }
