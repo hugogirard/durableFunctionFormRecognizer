@@ -95,7 +95,7 @@ jobs:
      runs-on: ubuntu-latest
      
      env:
-       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction/processor'
+       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/processor'
 
      steps:
 
@@ -132,7 +132,7 @@ jobs:
      runs-on: ubuntu-latest
      
      env:
-       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction/TrainModel'
+       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/TrainModel'
 
      steps:
 
