@@ -22,7 +22,7 @@
 #SOFTWARE.
 #------------------------------------------------------------------------------
 
-Start-Transcript
+# Start-Transcript
 ## Install .NET Core 5.0
 Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
 ./dotnet-install.ps1 -Channel 5.0 -InstallDir c:\dotnet
@@ -55,6 +55,7 @@ Set-Location C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
 Write-host "restoring nuget packages"
 c:\dotnet\dotnet.exe restore
 c:\dotnet\dotnet.exe build --configuration Release
+<<<<<<< HEAD
 
 # Set the path for dotnet.
 $OldPath=(Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
@@ -65,3 +66,5 @@ $NewPath=$OldPath+';'+$dotnetpath
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $NewPath
 }
 
+=======
+>>>>>>> f07bc004a3f04fbf02f864371616385935c6a07d
