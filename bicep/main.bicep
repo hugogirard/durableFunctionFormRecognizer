@@ -53,6 +53,14 @@ module compute 'modules/compute/windows.bicep' = {
   }
 }
 
+module appServicePlan 'modules/functions/appPlan.bicep' = {
+  name: 'appServicePlan'
+  params: {
+    location: location
+    suffix: suffix
+  }
+}
+
 module functionProcessor 'modules/functions/processor.bicep' = {
   name: 'functionProcessor'
   params: {
@@ -62,8 +70,24 @@ module functionProcessor 'modules/functions/processor.bicep' = {
     appInsightKey: insight.outputs.appInsightKey    
     strAccountApiVersion: storage.outputs.strFunctionApiVersion
     strAccountId: storage.outputs.strFunctionId
-    strAccountName: storage.outputs.strFunctionName    
+    strAccountName: storage.outputs.strFunctionName  
+    serverFarmId: appServicePlan.outputs.serverFarmId  
   }
 }
+
+module functionModel 'modules/functions/model.bicep' = {
+  name: 'functionModel'
+  params: {
+    location: location
+    suffix: suffix
+    appInsightCnxString: insight.outputs.appInsightCnxString
+    appInsightKey: insight.outputs.appInsightKey    
+    strAccountApiVersion: storage.outputs.strFunctionApiVersion
+    strAccountId: storage.outputs.strFunctionId
+    strAccountName: storage.outputs.strFunctionName    
+    serverFarmId: appServicePlan.outputs.serverFarmId  
+  }
+}
+
 
 output vmName string = compute.outputs.vmName

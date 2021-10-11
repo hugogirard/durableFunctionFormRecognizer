@@ -7,7 +7,7 @@ param strAccountId string
 param strAccountApiVersion string
 param serverFarmId string
 
-var functionAppName = 'fnc-processor-${suffix}'
+var functionAppName = 'fnc-model-trainer-${suffix}'
 
 resource function 'Microsoft.Web/sites@2020-06-01' = {
   name: functionAppName
@@ -35,7 +35,7 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
-          value: 'processorapp092'
+          value: 'modelapp092'
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -53,5 +53,3 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
     }
   }
 }
-
-

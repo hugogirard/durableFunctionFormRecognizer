@@ -24,11 +24,15 @@
 
 Start-Transcript
 ## Install .NET Core 5.0
-Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
-./dotnet-install.ps1 -Channel 5.0 -InstallDir c:\dotnet
+#Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
+#./dotnet-install.ps1 -Channel 5.0 -InstallDir c:\dotnet
+
+Invoke-WebRequest "https://download.visualstudio.microsoft.com/download/pr/aa5eedba-8906-4e2b-96f8-1b4f06187460/e6757becd35f67b0897bcdda44baec93/dotnet-sdk-5.0.401-win-x64.exe
+" -OutFile "./dotnet-sdk-5.0.401-win-x64"
+./dotnet-sdk-5.0.401-win-x64 /install /quiet /norestart
 
 # Install Post-Git
-Write-host "Installing Posh-Git"
+#Write-host "Installing Posh-Git"
 Install-PackageProvider -Name NuGet -force
 
 # Install chocolately to be able to install git
@@ -38,16 +42,19 @@ Invoke-WebRequest 'https://chocolatey.org/install.ps1' -OutFile "./choco-install
 # Install Git with choco
 choco install git -y
 
+# Install nuget
+choco install nuget.commandline -y
+
 # clone the sample repo
-New-Item -ItemType Directory -Path D:\git -Force
-Set-Location D:\git
+New-Item -ItemType Directory -Path C:\git -Force
+Set-Location C:\git
 Write-host "cloning repo"
 & 'C:\Program Files\git\cmd\git.exe' clone https://github.com/hugogirard/durableFunctionFormRecognizer.git
 
 write-host "Changing directory to $((Get-Item -Path ".\" -Verbose).FullName)"
-Set-Location D:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
+Set-Location C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
 
 # Restore NuGet packages and build applocation
 Write-host "restoring nuget packages"
-c:\dotnet\dotnet.exe restore
-c:\dotnet\dotnet.exe build --configuration Release
+dotnet restore
+dotnet build --configuration Release
