@@ -43,7 +43,7 @@ choco install git -y
 choco install nuget.commandline -y
 
 # Install Dotnet 5.0
-choco install dotnet-5.0-sdk -y
+choco install dotnet -y
 
 # clone the sample repo
 New-Item -ItemType Directory -Path C:\git -Force
