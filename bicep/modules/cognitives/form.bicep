@@ -24,3 +24,5 @@ resource frmRecognizer 'Microsoft.CognitiveServices/accounts@2021-04-30' = {
     }
   }
 }
+
+//output frmEndpoint string = frmRecognizer.

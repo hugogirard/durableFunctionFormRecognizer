@@ -91,3 +91,5 @@ module functionModel 'modules/functions/model.bicep' = {
 
 
 output vmName string = compute.outputs.vmName
+output functionProcessorName string = functionProcessor.outputs.functionName
+output functionModelName string = functionModel.outputs.functionName

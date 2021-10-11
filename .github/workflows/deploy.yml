@@ -29,6 +29,8 @@ jobs:
 
     outputs:
       vmName: ${{ steps.armDeployment.outputs.vmName }}
+      functionProcessorName: ${{ steps.armDeployment.outputs.functionProcessorName }}
+      functionModelName: ${{ steps.armDeployment.outputs.functionModelName }}
 
     steps:
 
@@ -86,5 +88,77 @@ jobs:
                 -Run 'setup_vm.ps1' `
                 -Name SetupVmScript        
        
+  deploy-processor-function:
 
+     needs: create-azure-resources
+
+     runs-on: ubuntu-latest
+     
+     env:
+       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction/processor'
+
+     steps:
+
+        - uses: actions/checkout@v2
+
+        - name: Azure Login
+          uses: Azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}  
+
+        - name: Setup DotNet 3.1.X Environment
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '3.1.x'
+
+        - name: 'Building with Dotnet'
+          shell: bash
+          run: |
+            pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+            dotnet build --configuration Release --output ./output
+            popd
+
+        - name: 'Run Azure Functions Action'
+          uses: Azure/functions-action@v1
+          id: fa
+          with:
+            app-name: ${{ needs.create-azure-resources.outputs.functionProcessorName }}
+            package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'   
+
+  deploy-model-function:
+
+     needs: create-azure-resources
+
+     runs-on: ubuntu-latest
+     
+     env:
+       AZURE_FUNCTIONAPP_PACKAGE_PATH: 'src/seederFunction/TrainModel'
+
+     steps:
+
+        - uses: actions/checkout@v2
+
+        - name: Azure Login
+          uses: Azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}  
+
+        - name: Setup DotNet 3.1.X Environment
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '3.1.x'
+
+        - name: 'Building with Dotnet'
+          shell: bash
+          run: |
+            pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+            dotnet build --configuration Release --output ./output
+            popd
+
+        - name: 'Run Azure Functions Action'
+          uses: Azure/functions-action@v1
+          id: fa
+          with:
+            app-name: ${{ needs.create-azure-resources.outputs.functionModelName }}
+            package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'                     
 

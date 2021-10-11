@@ -51,8 +51,17 @@ Write-host "cloning repo"
 write-host "Changing directory to $((Get-Item -Path ".\" -Verbose).FullName)"
 Set-Location C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
 
-
 # Restore NuGet packages and build applocation
 Write-host "restoring nuget packages"
 c:\dotnet\dotnet.exe restore
 c:\dotnet\dotnet.exe build --configuration Release
+
+# Set the path for dotnet.
+$OldPath=(Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
+$dotnetpath = "c:\dotnet"
+IF(Test-Path -Path $dotnetpath)
+{
+$NewPath=$OldPath+';'+$dotnetpath
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $NewPath
+}
+

@@ -53,3 +53,5 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
     }
   }
 }
+
+output functionName string = function.name
