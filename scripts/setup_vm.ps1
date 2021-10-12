@@ -22,7 +22,7 @@
 #SOFTWARE.
 #------------------------------------------------------------------------------
 
-Start-Transcript
+Start-Transcript -Path C:\installation_log.txt -Append
 ## Install .NET Core 5.0
 # Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
 # ./dotnet-install.ps1 -Channel 5.0 -InstallDir c:\dotnet

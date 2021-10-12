@@ -15,7 +15,17 @@
       "ProjectGuid": "7b3e088f-9b95-4d32-9e5b-9802c129ecb1",
       "DisplayName": "SeederApp",
       "ColorIndex": 1
+    },
+    "3010d594-3f09-4a23-ba78-fbe66c3f414d": {
+      "ProjectGuid": "3010d594-3f09-4a23-ba78-fbe66c3f414d",
+      "DisplayName": "TrainModel",
+      "ColorIndex": 2
+    },
+    "a44da631-dd63-4699-ba57-91873b8efc47": {
+      "ProjectGuid": "a44da631-dd63-4699-ba57-91873b8efc47",
+      "DisplayName": "Processor",
+      "ColorIndex": 3
     }
   },
-  "NextColorIndex": 2
+  "NextColorIndex": 4
 }
