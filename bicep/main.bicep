@@ -53,6 +53,14 @@ module compute 'modules/compute/windows.bicep' = {
   }
 }
 
+module cosmos 'modules/cosmos/cosmos.bicep' = {
+  name: 'cosmos'
+  params: {
+    location: location
+    suffix: suffix
+  }
+}
+
 module appServicePlan 'modules/functions/appPlan.bicep' = {
   name: 'appServicePlan'
   params: {
