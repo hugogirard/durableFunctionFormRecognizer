@@ -86,7 +86,11 @@ jobs:
                 -Location ${{ github.event.inputs.location }} `
                 -FileUri https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/scripts/setup_vm.ps1 `
                 -Run 'setup_vm.ps1' `
-                -Name SetupVmScript        
+                -Name SetupVmScript
+
+      - name: List if logfile present
+        run: |
+          ls
        
   deploy-processor-function:
 
