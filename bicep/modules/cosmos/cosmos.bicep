@@ -34,19 +34,19 @@ resource cosmosdb 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2021-06-15
   }
 }
 
-resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-06-15' = {
-  parent: cosmosdb
-  name: containerName
-  properties: {
-    resource: {
-      id: containerName
-      partitionKey: {
-        paths: '/id'
-        kind: 'Hash'
-      }
-    }
-    options: {
-      throughput: 400
-    }
-  }
-}
+// resource container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2021-06-15' = {
+//   parent: cosmosdb
+//   name: containerName
+//   properties: {
+//     resource: {
+//       id: containerName
+//       partitionKey: {
+//         paths: '/id'
+//         kind: 'Hash'
+//       }
+//     }
+//     options: {
+//       throughput: 400
+//     }
+//   }
+// }
