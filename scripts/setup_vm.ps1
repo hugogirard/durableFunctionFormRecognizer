@@ -24,8 +24,9 @@
 
 Start-Transcript -Path installation_log.txt -Append
 ## Install .NET Core 5.0
-# Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
-# ./dotnet-install.ps1 -Channel 5.0 -InstallDir c:\dotnet
+Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
+
+./dotnet-install.ps1 -Channel LTS
 
 
 # Install Post-Git
@@ -43,7 +44,7 @@ choco install git -y
 choco install nuget.commandline -y
 
 # Install Dotnet 5.0
-choco install dotnet -y
+#choco install dotnet -y
 
 # clone the sample repo
 New-Item -ItemType Directory -Path C:\git -Force
