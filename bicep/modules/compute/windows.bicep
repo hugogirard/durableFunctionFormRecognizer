@@ -1,4 +1,5 @@
 param location string
+
 param subnetId string
 param suffix string
 

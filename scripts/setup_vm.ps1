@@ -24,9 +24,9 @@
 
 Start-Transcript -Path installation_log.txt -Append
 ## Install .NET Core 5.0
-Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
+# Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
 
-./dotnet-install.ps1 -Channel LTS
+# ./dotnet-install.ps1 -Channel LTS
 
 
 # Install Post-Git
@@ -52,10 +52,10 @@ Set-Location C:\git
 Write-host "cloning repo"
 & 'C:\Program Files\git\cmd\git.exe' clone https://github.com/hugogirard/durableFunctionFormRecognizer.git
 
-write-host "Changing directory to $((Get-Item -Path ".\" -Verbose).FullName)"
-Set-Location C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
+# write-host "Changing directory to $((Get-Item -Path ".\" -Verbose).FullName)"
+# Set-Location C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
 
-# Restore NuGet packages and build applocation
-Write-host "restoring nuget packages"
-dotnet restore
-dotnet build --configuration Release
+# # Restore NuGet packages and build applocation
+# Write-host "restoring nuget packages"
+# dotnet restore
+# dotnet build --configuration Release

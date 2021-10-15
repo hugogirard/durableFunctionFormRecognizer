@@ -1,6 +1,9 @@
 param location string
 param addressSpaceSubnet string
+
+@description('this is the address space')
 param addressSpaceVnet string
+
 @secure()
 param adminUsername string
 
