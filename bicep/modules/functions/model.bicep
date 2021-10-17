@@ -32,6 +32,7 @@ param strModelApiVersion string
 
 param serverFarmId string
 param formRecognizerEndpoint string
+param formRecognizerKey string
 
 var functionAppName = 'fnc-model-trainer-${suffix}'
 
@@ -77,7 +78,7 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'FormRecognizerApiKey'
-          value: 'TBD'
+          value: formRecognizerKey
         }
         {
           name: 'FormRecognizerEndpoint'

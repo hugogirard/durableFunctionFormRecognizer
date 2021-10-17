@@ -104,6 +104,7 @@ module functionProcessor 'modules/functions/processor.bicep' = {
     strAccountName: storage.outputs.strFunctionName  
     serverFarmId: appServicePlan.outputs.serverFarmId
     formRecognizerEndpoint: cognitives.outputs.frmEndpoint
+    formRecognizerKey: cognitives.outputs.frmKey
     strDocumentName: storage.outputs.strDocumentName
     strDocumentId: storage.outputs.strDocumentId
     strDocumentApiVersion: storage.outputs.strDocumentApiVersion
@@ -128,6 +129,7 @@ module functionModel 'modules/functions/model.bicep' = {
     strModelName: storage.outputs.strDocumentName
     strModelApiVersion: storage.outputs.strDocumentApiVersion
     formRecognizerEndpoint: cognitives.outputs.frmEndpoint
+    formRecognizerKey: cognitives.outputs.frmKey
   }
 }
 

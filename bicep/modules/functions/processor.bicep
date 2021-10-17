@@ -32,6 +32,7 @@ param strDocumentApiVersion string
 
 param serverFarmId string
 param formRecognizerEndpoint string
+param formRecognizerKey string
 
 param cosmosEndpoint string
 param cosmosKey string
@@ -77,7 +78,7 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'FormRecognizerKey'
-          value: 'TBD'
+          value: formRecognizerKey
         }
         {
           name: 'FormRecognizerModelId'
