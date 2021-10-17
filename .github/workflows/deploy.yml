@@ -132,7 +132,7 @@ jobs:
             az logout                        
 
   deploy-processor-function:
-
+     if: ${{ false }} #Disable for now for testing
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
@@ -173,7 +173,7 @@ jobs:
             az logout                  
 
   deploy-model-function:
-
+     if: ${{ false }} #Disable for now for testing
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
