@@ -117,6 +117,10 @@ module functionModel 'modules/functions/model.bicep' = {
     strAccountId: storage.outputs.strFunctionId
     strAccountName: storage.outputs.strFunctionName    
     serverFarmId: appServicePlan.outputs.serverFarmId  
+    strModelId: storage.outputs.strDocumentId
+    strModelName: storage.outputs.strDocumentName
+    strModelApiVersion: storage.outputs.strDocumentApiVersion
+    formRecognizerEndpoint: cognitives.outputs.frmEndpoint
   }
 }
 

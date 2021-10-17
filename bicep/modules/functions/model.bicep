@@ -25,7 +25,13 @@ param appInsightCnxString string
 param strAccountName string
 param strAccountId string
 param strAccountApiVersion string
+
+param strModelName string
+param strModelId string
+param strModelApiVersion string
+
 param serverFarmId string
+param formRecognizerEndpoint string
 
 var functionAppName = 'fnc-model-trainer-${suffix}'
 
@@ -68,6 +74,22 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~12'
+        }
+        {
+          name: 'FormRecognizerApiKey'
+          value: 'TBD'
+        }
+        {
+          name: 'FormRecognizerEndpoint'
+          value: formRecognizerEndpoint
+        }
+        {
+          name: 'ModelStorageCnxString'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${strModelName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strModelId, strModelApiVersion).keys[0].value}'
+        }
+        {
+          name: 'ModelContainer'
+          value: 'models'
         }
       ]
     }
