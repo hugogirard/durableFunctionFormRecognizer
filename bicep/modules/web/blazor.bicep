@@ -14,13 +14,15 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-01-15' = {
 }
 
 
-resource appService 'Microsoft.Web/sites@2021-01-15' = {
+resource appService 'Microsoft.Web/sites@2018-11-01' = {
   name: webAppName
   location: location
   properties: {
     serverFarmId: appServicePlan.id
+    clientAffinityEnabled: false
     siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|5.0'
+      linuxFxVersion: 'DOTNETCORE|3.1'
+      alwaysOn: true
     }
   }
 }

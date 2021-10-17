@@ -4,6 +4,34 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Model\ceo.pdf" />
+    <None Remove="Model\cloudarchitect.pdf" />
+    <None Remove="Model\csharpprogrammer.pdf" />
+    <None Remove="Model\fullstack.pdf" />
+    <None Remove="Model\securityguard.pdf" />
+    <None Remove="Model\template.pdf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Model\ceo.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Model\cloudarchitect.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Model\csharpprogrammer.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Model\fullstack.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Model\securityguard.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Model\template.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Azure.AI.FormRecognizer" Version="3.1.1" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
