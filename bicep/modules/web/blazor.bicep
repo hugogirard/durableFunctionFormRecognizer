@@ -8,8 +8,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-01-15' = {
   name: appPlanName
   location: location
   sku: {
-    name: 'Basic'
-    tier: 'B1'
+    name: 'B1'
+    tier: 'Basic'
   }
 }
 

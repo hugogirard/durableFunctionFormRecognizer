@@ -93,6 +93,7 @@ jobs:
           ls
 
   deploy-blazor-app:
+     if: ${{ false }} #Disable for now for testing
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
