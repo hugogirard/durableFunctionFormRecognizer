@@ -20,7 +20,7 @@ resource appService 'Microsoft.Web/sites@2021-01-15' = {
   properties: {
     serverFarmId: appServicePlan.id
     siteConfig: {
-      linuxFxVersion: 'dotnet'
+      linuxFxVersion: 'DOTNETCORE|5.0'
     }
   }
 }

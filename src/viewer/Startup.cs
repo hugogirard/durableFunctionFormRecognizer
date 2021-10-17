@@ -43,6 +43,7 @@ namespace Viewer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddHttpClient();
             services.AddScoped(sp => new HttpClient());
         }
 
