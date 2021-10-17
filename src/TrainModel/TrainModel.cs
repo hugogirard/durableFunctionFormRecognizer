@@ -44,32 +44,6 @@ namespace TrainModel
             _blobContainerClient = blobContainerClient;
         }
 
-        [FunctionName("UploadAsset")]
-        public async Task<IActionResult> UploadAssets([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-                                                      ILogger log) 
-        {
-			try
-			{
-                foreach (var file in Directory.GetFiles("Model"))
-                {
-                    using (var fs = new FileStream(file, FileMode.Open))
-                    {
-                        string filename = Path.GetFileName(file);
-                        await _blobContainerClient.UploadBlobAsync(filename, new BinaryData(fs));
-                    }
-                }
-
-                return new OkResult();
-            }
-			catch (Exception ex)
-			{
-                log.LogError(ex.Message, ex);
-                return new ObjectResult("Internal Server Error") { StatusCode = 500 };
-            }
-
-
-        }
-
         [FunctionName("TrainModel")]
         public async Task<IActionResult> TrainCustomModel(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
