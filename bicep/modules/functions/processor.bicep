@@ -25,7 +25,17 @@ param appInsightCnxString string
 param strAccountName string
 param strAccountId string
 param strAccountApiVersion string
+
+param strDocumentName string
+param strDocumentId string
+param strDocumentApiVersion string
+
 param serverFarmId string
+param formRecognizerEndpoint string
+
+param cosmosEndpoint string
+param cosmosKey string
+param cosmosDatabaseName string
 
 var functionAppName = 'fnc-processor-${suffix}'
 
@@ -52,6 +62,42 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${strAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strAccountId, strAccountApiVersion).keys[0].value}'
+        }
+        {
+          name: 'BlobContainerName'
+          value: 'documents'
+        }
+        {
+          name: 'StorageAccountConnectionString'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${strDocumentName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strDocumentId, strDocumentApiVersion).keys[0].value}'
+        }
+        {
+          name: 'FormRecognizerEndpoint'
+          value: formRecognizerEndpoint
+        }
+        {
+          name: 'FormRecognizerKey'
+          value: 'TBD'
+        }
+        {
+          name: 'FormRecognizerModelId'
+          value: 'TBD'
+        }
+        {
+          name: 'CosmosEndpoint'
+          value: cosmosEndpoint
+        }
+        {
+          name: 'CosmosAuthKey'
+          value: cosmosKey
+        }
+        {
+          name: 'CosmosDatabaseId'
+          value: cosmosDatabaseName
+        }
+        {
+          name: 'CosmosContainerId'
+          value: 'TBD'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'

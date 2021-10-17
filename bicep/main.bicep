@@ -102,7 +102,14 @@ module functionProcessor 'modules/functions/processor.bicep' = {
     strAccountApiVersion: storage.outputs.strFunctionApiVersion
     strAccountId: storage.outputs.strFunctionId
     strAccountName: storage.outputs.strFunctionName  
-    serverFarmId: appServicePlan.outputs.serverFarmId  
+    serverFarmId: appServicePlan.outputs.serverFarmId
+    formRecognizerEndpoint: cognitives.outputs.frmEndpoint
+    strDocumentName: storage.outputs.strDocumentName
+    strDocumentId: storage.outputs.strDocumentId
+    strDocumentApiVersion: storage.outputs.strDocumentApiVersion
+    cosmosEndpoint: cosmos.outputs.cosmosEndpoint
+    cosmosKey: cosmos.outputs.cosmosKey
+    cosmosDatabaseName: cosmos.outputs.databaseNameOutput    
   }
 }
 
