@@ -50,24 +50,24 @@ namespace TrainModel
         {
 			try
 			{
+                foreach (var file in Directory.GetFiles("Model"))
+                {
+                    using (var fs = new FileStream(file, FileMode.Open))
+                    {
+                        string filename = Path.GetFileName(file);
+                        await _blobContainerClient.UploadBlobAsync(filename, new BinaryData(fs));
+                    }
+                }
 
-			}
+                return new OkResult();
+            }
 			catch (Exception ex)
 			{
+                log.LogError(ex.Message, ex);
+                return new ObjectResult("Internal Server Error") { StatusCode = 500 };
+            }
 
-				throw;
-			}
 
-			foreach (var file in Directory.GetFiles("Model"))
-			{
-                using (var fs = new FileStream(file, FileMode.Open))
-                {
-                    string filename = Path.GetFileName(file);
-                    await _blobContainerClient.UploadBlobAsync(filename, new BinaryData(fs)); 
-                }
-			}
-
-            return new OkResult();
         }
 
         [FunctionName("TrainModel")]

@@ -1,14 +1,15 @@
 param location string
 param suffix string
 
-var appPlanName = 'plan-${suffix}'
+var appPlanName = 'plan-blazor-${suffix}'
 var webAppName = 'blazor-admin-${suffix}'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2021-01-15' = {
   name: appPlanName
   location: location
   sku: {
-    name: 'S1'
+    name: 'Basic'
+    tier: 'B1'
   }
   kind: 'linux'
 }
