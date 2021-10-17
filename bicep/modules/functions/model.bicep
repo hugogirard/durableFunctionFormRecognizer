@@ -97,4 +97,3 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
 }
 
 output functionName string = function.name
-output functionEndpoint string = '${function.properties.enabledHostNames[0]}/api/TrainModel?code=${listKeys(function.id,function.apiVersion).key}'
