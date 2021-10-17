@@ -120,7 +120,16 @@ module functionModel 'modules/functions/model.bicep' = {
   }
 }
 
+module blazorApp 'modules/web/blazor.bicep' = {
+  name: 'blazorApp'
+  params: {
+    location: location
+    suffix: suffix
+  }
+}
+
 
 output vmName string = compute.outputs.vmName
 output functionProcessorName string = functionProcessor.outputs.functionName
 output functionModelName string = functionModel.outputs.functionName
+output webAppName string = blazorApp.outputs.appName

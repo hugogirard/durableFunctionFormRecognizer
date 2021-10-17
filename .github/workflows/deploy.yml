@@ -61,7 +61,7 @@ jobs:
           parameters: location=${{ github.event.inputs.location }} addressSpaceVnet=${{ github.event.inputs.addressSpaceVnet }} addressSpaceSubnet=${{ github.event.inputs.addressSpaceSubnet }} adminUsername=${{ secrets.ADMIN_USERNAME }} adminPassword=${{ secrets.ADMIN_PASSWORD }}
 
   configure-vm:
-     
+     if: ${{ false }} #Disable for now for testing
      needs: create-azure-resources
 
      runs-on: windows-latest
@@ -91,7 +91,45 @@ jobs:
       - name: List if logfile present
         run: |
           ls
-       
+
+  deploy-blazor-app:
+     needs: create-azure-resources
+
+     runs-on: ubuntu-latest
+
+     env:
+        AZURE_WEBAPP_PACKAGE_PATH: './src/viewer'
+
+     steps:
+
+        - uses: actions/checkout@v2
+
+        - name: Azure Login
+          uses: Azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}  
+            
+        - name: Setup .NET Version 5
+          uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: 5.0.x
+            
+        - name: dotnet build and publish
+          run: |
+            dotnet restore
+            dotnet build --configuration Release
+            dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/output'
+
+        - name: 'Run Azure webapp deploy action using publish profile credentials'
+          uses: azure/webapps-deploy@v2
+          with: 
+            app-name: ${{ needs.create-azure-resources.outputs.webAppName }}
+            package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/output' 
+            
+        - name: logout
+          run: |
+            az logout                        
+
   deploy-processor-function:
 
      needs: create-azure-resources
@@ -129,6 +167,10 @@ jobs:
             app-name: ${{ needs.create-azure-resources.outputs.functionProcessorName }}
             package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'   
 
+        - name: logout
+          run: |
+            az logout                  
+
   deploy-model-function:
 
      needs: create-azure-resources
@@ -165,4 +207,8 @@ jobs:
           with:
             app-name: ${{ needs.create-azure-resources.outputs.functionModelName }}
             package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'                     
+
+        - name: logout
+          run: |
+            az logout      
 

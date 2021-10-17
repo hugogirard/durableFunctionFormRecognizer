@@ -45,4 +45,5 @@ resource frmRecognizer 'Microsoft.CognitiveServices/accounts@2021-04-30' = {
   }
 }
 
-//output frmEndpoint string = frmRecognizer.
+output frmEndpoint string = frmRecognizer.properties.endpoint
+output frmKey string = frmRecognizer.listKeys().keys[0].value

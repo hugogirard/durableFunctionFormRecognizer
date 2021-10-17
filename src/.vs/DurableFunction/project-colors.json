@@ -25,7 +25,12 @@
       "ProjectGuid": "a44da631-dd63-4699-ba57-91873b8efc47",
       "DisplayName": "Processor",
       "ColorIndex": 3
+    },
+    "8708fe2c-ec14-420b-b464-6541cc045659": {
+      "ProjectGuid": "8708fe2c-ec14-420b-b464-6541cc045659",
+      "DisplayName": "Viewer",
+      "ColorIndex": 4
     }
   },
-  "NextColorIndex": 4
+  "NextColorIndex": 5
 }
