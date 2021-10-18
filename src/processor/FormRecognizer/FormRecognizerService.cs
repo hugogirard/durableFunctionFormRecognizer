@@ -45,7 +45,7 @@ public class FormRecognizerService : IFormRecognizerService
             if (ex.ErrorCode == "429") 
             {
                 log.LogWarning("Form Recognizer call was throttled on POST...");
-                return null;
+                throw new TransientFailureException("Form Recognizer call was throttled on POST...");
             }
             throw;
         }
@@ -69,7 +69,7 @@ public class FormRecognizerService : IFormRecognizerService
             if (ex.ErrorCode == "429") 
             {
                 log.LogWarning("Form Recognizer call was throttled on GET...");
-                return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.TransientFailure };;
+                throw new TransientFailureException("Form Recognizer call was throttled on GET...");
             }
             throw;
         }            

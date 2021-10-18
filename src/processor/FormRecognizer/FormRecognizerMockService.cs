@@ -44,7 +44,7 @@ public class FormRecognizerMockService : IFormRecognizerService
         if (rnd.Next(1, 20) == 3)
         {
             log.LogWarning("Simulated transient failure...");
-            return null;
+            throw new TransientFailureException();
         }      
 
         if (serviceUrl != null)
@@ -64,7 +64,7 @@ public class FormRecognizerMockService : IFormRecognizerService
         if (rnd.Next(1, 20) == 3)
         {
             log.LogInformation("Simulated transient failure...");
-            return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.TransientFailure };
+            throw new TransientFailureException();
         }     
 
         if (serviceUrl != null)

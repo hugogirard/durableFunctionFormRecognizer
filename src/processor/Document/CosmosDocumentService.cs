@@ -17,14 +17,31 @@
 *
 * DEMO POC - "AS IS"
 */
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 
-public class CosmosMockService : ICosmosService
+public class CosmosDocumentService : IDocumentService
 {
-    public Task SaveDocuments(IEnumerable<Document> documents)
+    private int batchSize;
+    private Container container;
+
+    public CosmosDocumentService(Container container, int batchSize)
     {        
-        return Task.CompletedTask;     
+        this.container = container;
+        this.batchSize = batchSize;
+    }
+
+    public async Task SaveDocuments(IEnumerable<Document> documents)
+    {        
+        foreach(var documentPartition in documents.Partition(batchSize))
+        {
+            var tasks = new List<Task>(); 
+            foreach(var document in documentPartition)
+            {
+                tasks.Add(container.UpsertItemAsync<Document>(document, new PartitionKey(document.Id)));
+            }
+            await Task.WhenAll(tasks);
+        }        
     }
 }

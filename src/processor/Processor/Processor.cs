@@ -25,23 +25,24 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 public class Processor
 {
     private ProcessorOptions options;
     private IBlobStorageService blobStorageService;
     private IFormRecognizerService formRecognizerService;
-    private ICosmosService cosmosService;
+    private IDocumentService documentService;
 
     public Processor(ProcessorOptions options, 
                      IBlobStorageService blobStorageService, 
                      IFormRecognizerService formRecognizerService, 
-                     ICosmosService cosmosService)
+                     IDocumentService documentService)
     {
         this.options = options;
         this.blobStorageService = blobStorageService;
         this.formRecognizerService = formRecognizerService;
-        this.cosmosService = cosmosService;
+        this.documentService = documentService;
     }
 
    [FunctionName("Processor")]
@@ -101,31 +102,40 @@ public class Processor
         var prefix = $"[Processor:{input.PartitionId}]";
         var processBlobInfos = input.Blobs.ToDictionary(x => x.BlobName, x => new ProcessBlobInfo() { Blob = x });
 
+        var policy = Policy
+            .Handle<TransientFailureException>()
+            .WaitAndRetry(options.MaxRetries, retryAttempt => TimeSpan.FromMilliseconds(
+                Math.Pow(options.RetryMillisecondsPower, retryAttempt) * options.RetryMillisecondsFactor)
+            );        
+
         do
         {
             if(postMode) log.LogInformation($"{prefix} Submitting documents to Form Recognizer...");
             else log.LogInformation($"{prefix} Getting Form Recognizer results...");
 
-            for(int i=0; i<options.MaxRetries; i++)
+            foreach (var processBlobInfo in processBlobInfos.Values.ToArray())
             {
-                var unprocessedBlobInfos = postMode ? processBlobInfos.Values.Where(x => String.IsNullOrEmpty(x.OperationId)).ToArray() :
-                                                      processBlobInfos.Values.Where(x => x.Blob.State == BlobInfo.ProcessState.Unprocessed).ToArray();
-
-                if (!unprocessedBlobInfos.Any()) break;
-
-                foreach (var processBlobInfo in unprocessedBlobInfos)
+                await policy.Execute(async () => 
                 {
-                    processBlobInfos[processBlobInfo.Blob.BlobName] = 
-                        await ProcessBlob(processBlobInfos[processBlobInfo.Blob.BlobName], postMode, log);
-                }
+                    try
+                    {
+                        processBlobInfos[processBlobInfo.Blob.BlobName] = 
+                            await ProcessBlob(processBlobInfos[processBlobInfo.Blob.BlobName], postMode, log);
+                    }
+                    catch (TransientFailureException)
+                    {
+                        processBlobInfos[processBlobInfo.Blob.BlobName].Blob.TransientFailureCount++;
+                        throw;
+                    }
+                });                    
             }
 
             postMode = !postMode;
         }
         while (!postMode);
  
-        log.LogInformation($"{prefix} Saving documentsa to Cosmos...");
-        await cosmosService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
+        log.LogInformation($"{prefix} Saving documents...");
+        await documentService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
                 Id = x.Blob.BlobName,
                 State = x.Blob.State.ToString(),
                 Forms = x.Forms?.Select(x => new Document.Form(x)),
@@ -146,7 +156,6 @@ public class Processor
                 {
                     processBlobInfo.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream, log);
                     processBlobInfo.StartTime = DateTime.Now;
-                    if (String.IsNullOrEmpty(processBlobInfo.OperationId)) processBlobInfo.Blob.TransientFailureCount++;
                 }
             }                
             else
@@ -157,7 +166,6 @@ public class Processor
                     if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
 
                     var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId, log);                    
-                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.TransientFailure) processBlobInfo.Blob.TransientFailureCount++;
                     if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
                     if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult) 
                     {
@@ -167,6 +175,10 @@ public class Processor
                 }
             }
             return processBlobInfo;
+        }
+        catch (TransientFailureException)
+        {
+            throw; // Rethrow this type of exception
         }
         catch (Exception e)
         {

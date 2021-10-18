@@ -20,7 +20,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public interface ICosmosService
+public interface IDocumentService
 {
     public Task SaveDocuments(IEnumerable<Document> documents);
 }

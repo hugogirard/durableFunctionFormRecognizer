@@ -26,8 +26,7 @@ public class FormRecognizerResult
     {
         NotCompleted = 0,
         CompletedWithResult = 1,
-        CompletedWithoutResult = 2,
-        TransientFailure = 3
+        CompletedWithoutResult = 2
     }
 
     public IEnumerable<RecognizedForm> Forms { get; set; }

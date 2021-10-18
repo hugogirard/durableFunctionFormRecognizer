@@ -17,14 +17,33 @@
 *
 * DEMO POC - "AS IS"
 */
-using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure.Data.Tables;
+using Newtonsoft.Json;
 
-public class ProcessorOptions : BaseOptions
-{        
-    public int MaxRetries { get; set; }
-    public int RetryMillisecondsPower { get; set; }
-    public int RetryMillisecondsFactor { get; set; }
-    public string FormRecognizerModelId { get; set; }
-    public TimeSpan NoDataDelay { get; set; }
-    public TimeSpan MinProcessingTime { get; set; }
+public class TableDocumentService : IDocumentService
+{
+    private TableClient tableClient;
+
+    public TableDocumentService(TableClient tableClient)
+    {        
+        this.tableClient = tableClient;
+    }
+
+    public async Task SaveDocuments(IEnumerable<Document> documents)
+    {
+        var tasks = new List<Task>();
+        foreach(var document in documents)
+        {
+            var tableEntity = new TableEntity("1", document.Id);
+            tableEntity.Add("State", document.State);
+            tableEntity.Add("Exception", document.Exception);
+            tableEntity.Add("TransientFailureCount", document.TransientFailureCount);
+            tableEntity.Add("Forms", JsonConvert.SerializeObject(document.Forms));
+            tasks.Add(tableClient.UpsertEntityAsync<TableEntity>(tableEntity, TableUpdateMode.Merge, CancellationToken.None));
+        }
+        await Task.WhenAll(tasks);
+    }
 }
