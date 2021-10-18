@@ -99,7 +99,7 @@ jobs:
      runs-on: ubuntu-latest
 
      env:
-        AZURE_WEBAPP_PACKAGE_PATH: './src/viewer'
+        AZURE_WEBAPP_PACKAGE_PATH: 'src/viewer'
 
      steps:
 

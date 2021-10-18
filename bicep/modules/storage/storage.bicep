@@ -82,9 +82,9 @@ resource storageAccountDocument 'Microsoft.Storage/storageAccounts@2021-04-01' =
   }
 }
 
-//resource table 'Microsoft.Storage/storageAccounts/tableServices@2021-06-01' = {
-//  name: '${storageAccountDocument.name}/Documents'  
-//}
+resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-06-01' = {
+ name: '${storageAccountDocument.name}/default/documents'  
+}
 
 resource containerDocuments 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-04-01' = {
   name: '${storageAccountDocument.name}/default/documents'
@@ -140,6 +140,4 @@ output strDocumentName string = storageAccountDocument.name
 output strDocumentId string = storageAccountDocument.id
 output strDocumentApiVersion string = storageAccountDocument.apiVersion
 
-output tableName string = 'test'
-
-//output tableName string = table.name
+output tableName string = table.name
