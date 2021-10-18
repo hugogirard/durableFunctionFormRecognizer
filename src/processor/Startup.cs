@@ -56,21 +56,21 @@ public class Startup : FunctionsStartup
         var noDataDelay = GetConfigValue<TimeSpan>(config, "NoDataDelay", defaultValue: TimeSpan.FromSeconds(10));
         var minProcessingTime = GetConfigValue<TimeSpan>(config, "MinProcessingTime", defaultValue: TimeSpan.FromSeconds(10));
 
-        builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
-        // builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
-        //     blobContainerName, new BlobServiceClient(storageAccountConnectionString)));
+        //builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
+        builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
+            blobContainerName, new BlobServiceClient(storageAccountConnectionString)));
 
-        builder.Services.AddHttpClient();
-        var serviceUrl = GetConfigValue<string>(config, "ServiceUrl", null);
-        var serviceUri = String.IsNullOrEmpty(serviceUrl) ? null : new Uri(serviceUrl);
-         builder.Services.AddSingleton<IFormRecognizerService>(sp => new FormRecognizerMockService(
-             serviceUri, sp.GetService<IHttpClientFactory>()));
-        // builder.Services.AddSingleton<IFormRecognizerService>(_ => {
-        //     var formRecognizerClientOptions = new FormRecognizerClientOptions();
-        //     formRecognizerClientOptions.Retry.MaxRetries = 0;
-        //     return new FormRecognizerService(new FormRecognizerClient(new Uri(formRecognizerEndpoint), 
-        //         new Azure.AzureKeyCredential(formRecognizerKey), formRecognizerClientOptions));
-        // });
+        // builder.Services.AddHttpClient();
+        // var serviceUrl = GetConfigValue<string>(config, "ServiceUrl", null);
+        // var serviceUri = String.IsNullOrEmpty(serviceUrl) ? null : new Uri(serviceUrl);
+        //  builder.Services.AddSingleton<IFormRecognizerService>(sp => new FormRecognizerMockService(
+        //      serviceUri, sp.GetService<IHttpClientFactory>()));
+        builder.Services.AddSingleton<IFormRecognizerService>(_ => {
+            var formRecognizerClientOptions = new FormRecognizerClientOptions();
+            formRecognizerClientOptions.Retry.MaxRetries = 0;
+            return new FormRecognizerService(new FormRecognizerClient(new Uri(formRecognizerEndpoint), 
+                new Azure.AzureKeyCredential(formRecognizerKey), formRecognizerClientOptions));
+        });
 
         builder.Services.AddSingleton<ICosmosService>(_ => new CosmosMockService());
         // builder.Services.AddSingleton<ICosmosService>(_ => {

@@ -110,7 +110,7 @@ public class Starter
                 log.LogInformation(file);                
                 
                 var fi = new System.IO.FileInfo($@"..\..\..\Seed\Seed-{j}.pdf");
-                tasks.Add(blobStorageService.UploadFileIfNewAndTag(fi.FullName, file, stateName));
+                tasks.Add(blobStorageService.UploadFileIfNewAndTag(fi.FullName, file, stateName.ToLower()));
             }
 
             await Task.WhenAll(tasks);

@@ -119,9 +119,9 @@ else
                 <td></td>
                 <td></td>
                 <td></td>               
-                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed + x.Stats.TotalProcessed)</td>
-                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed + x.Stats.TotalFailed)</td>
-                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed + x.Stats.TotalTransientFailures)</td>                                                
+                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalProcessed)</td>
+                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalFailed)</td>
+                <td>@processorInstances.Select(x => x.GetInputObject<ProcessorInput>()).Sum(x => x.Stats.TotalTransientFailures)</td>                                                
                 </tr>
         </tfoot>
 
