@@ -37,6 +37,7 @@ param formRecognizerKey string
 param cosmosEndpoint string
 param cosmosKey string
 param cosmosDatabaseName string
+param cosmosContainerName string
 
 var functionAppName = 'fnc-processor-${suffix}'
 
@@ -98,7 +99,7 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'CosmosContainerId'
-          value: 'TBD'
+          value: cosmosContainerName
         }
         {
           name: 'WEBSITE_CONTENTSHARE'

@@ -22,16 +22,11 @@
 #SOFTWARE.
 #------------------------------------------------------------------------------
 
-Start-Transcript -Path installation_log.txt -Append
+Start-Transcript
 ## Install .NET Core 5.0
-# Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
+Invoke-WebRequest "https://dot.net/v1/dotnet-install.ps1" -OutFile "./dotnet-install.ps1" 
 
-# ./dotnet-install.ps1 -Channel LTS
-
-
-# Install Post-Git
-#Write-host "Installing Posh-Git"
-#Install-PackageProvider -Name NuGet -force
+./dotnet-install.ps1 -Channel 5.0 -InstallDir c:\dotnet
 
 # Install chocolately to be able to install git
 Invoke-WebRequest 'https://chocolatey.org/install.ps1' -OutFile "./choco-install.ps1"
@@ -43,19 +38,28 @@ choco install git -y
 # Install nuget
 choco install nuget.commandline -y
 
-# Install Dotnet 5.0
-#choco install dotnet -y
-
 # clone the sample repo
 New-Item -ItemType Directory -Path C:\git -Force
 Set-Location C:\git
 Write-host "cloning repo"
 & 'C:\Program Files\git\cmd\git.exe' clone https://github.com/hugogirard/durableFunctionFormRecognizer.git
 
-# write-host "Changing directory to $((Get-Item -Path ".\" -Verbose).FullName)"
-# Set-Location C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp\
+write-host "Changing directory to $((Get-Item -Path ".\" -Verbose).FullName)"
+Set-Location c:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp
 
-# # Restore NuGet packages and build applocation
-# Write-host "restoring nuget packages"
-# dotnet restore
-# dotnet build --configuration Release
+# Restore NuGet packages and build applocation
+Write-host "restoring nuget packages"
+c:\dotnet\dotnet.exe restore
+c:\dotnet\dotnet.exe build
+
+# Set the path for dotnet.
+$OldPath=(Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
+
+$dotnetpath = "c:\dotnet"
+IF(Test-Path -Path $dotnetpath)
+{
+    $NewPath=$OldPath+';'+$dotnetpath
+    Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $NewPath
+}
+
+Stop-Transcript
