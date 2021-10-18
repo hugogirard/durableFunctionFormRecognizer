@@ -31,6 +31,7 @@ jobs:
       vmName: ${{ steps.armDeployment.outputs.vmName }}
       functionProcessorName: ${{ steps.armDeployment.outputs.functionProcessorName }}
       functionModelName: ${{ steps.armDeployment.outputs.functionModelName }}
+      webAppName: ${{ steps.armDeployment.outputs.webAppName }}
 
     steps:
 
