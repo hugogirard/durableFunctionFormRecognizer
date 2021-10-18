@@ -20,8 +20,6 @@
 
 param location string
 param addressSpaceSubnet string
-
-@description('this is the address space')
 param addressSpaceVnet string
 
 @secure()
@@ -76,14 +74,6 @@ module compute 'modules/compute/windows.bicep' = {
   }
 }
 
-module cosmos 'modules/cosmos/cosmos.bicep' = {
-  name: 'cosmos'
-  params: {
-    location: location
-    suffix: suffix
-  }
-}
-
 module appServicePlan 'modules/functions/appPlan.bicep' = {
   name: 'appServicePlan'
   params: {
@@ -108,10 +98,7 @@ module functionProcessor 'modules/functions/processor.bicep' = {
     strDocumentName: storage.outputs.strDocumentName
     strDocumentId: storage.outputs.strDocumentId
     strDocumentApiVersion: storage.outputs.strDocumentApiVersion
-    cosmosEndpoint: cosmos.outputs.cosmosEndpoint
-    cosmosKey: cosmos.outputs.cosmosKey
-    cosmosDatabaseName: cosmos.outputs.databaseNameOutput    
-    cosmosContainerName: cosmos.outputs.containerNameOuput
+    tableName: storage.outputs.tableName
   }
 }
 
@@ -139,6 +126,8 @@ module blazorApp 'modules/web/blazor.bicep' = {
   params: {
     location: location
     suffix: suffix
+    appInsightCnxString: insight.outputs.appInsightCnxString
+    appInsightKey: insight.outputs.appInsightKey
   }
 }
 

@@ -6,7 +6,7 @@ on:
    inputs:
      resourceGroupName:
        description: 'Name of the resource group'
-       default: 'rg-durable-function-demo'
+       default: 'rg-durable-function-demo-2'
        required: true
      location:
        description: 'Location where all resources will be created'
