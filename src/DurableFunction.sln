@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Processor", "processor\Proc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Viewer", "viewer\Viewer.csproj", "{8708FE2C-EC14-420B-B464-6541CC045659}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrainModel", "TrainModel\TrainModel.csproj", "{3010D594-3F09-4A23-BA78-FBE66C3F414D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrainModel", "TrainModel\TrainModel.csproj", "{3010D594-3F09-4A23-BA78-FBE66C3F414D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

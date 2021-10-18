@@ -32,49 +32,49 @@ param adminPassword string
 
 var suffix = uniqueString(resourceGroup().id)
 
-module cognitives 'modules/cognitives/form.bicep' = {
-  name: 'cognitives'
-  params: {
-    location: location
-    suffix: suffix
-  }
-}
+// module cognitives 'modules/cognitives/form.bicep' = {
+//   name: 'cognitives'
+//   params: {
+//     location: location
+//     suffix: suffix
+//   }
+// }
 
-module insight 'modules/insights/insights.bicep' = {
-  name: 'insight'
-  params: {
-    location: location
-    suffix: suffix    
-  }
-}
+// module insight 'modules/insights/insights.bicep' = {
+//   name: 'insight'
+//   params: {
+//     location: location
+//     suffix: suffix    
+//   }
+// }
 
-module storage 'modules/storage/storage.bicep' = {
-  name: 'storage'
-  params: {
-    location: location
-    suffix: suffix
-  }
-}
+// module storage 'modules/storage/storage.bicep' = {
+//   name: 'storage'
+//   params: {
+//     location: location
+//     suffix: suffix
+//   }
+// }
 
-module vnet 'modules/network/vnet.bicep' = {
-  name: 'vnet'
-  params: {
-    location: location
-    addressSpaceVnet: addressSpaceVnet
-    addressSpaceSubnet: addressSpaceSubnet
-  }
-}
+// module vnet 'modules/network/vnet.bicep' = {
+//   name: 'vnet'
+//   params: {
+//     location: location
+//     addressSpaceVnet: addressSpaceVnet
+//     addressSpaceSubnet: addressSpaceSubnet
+//   }
+// }
 
-module compute 'modules/compute/windows.bicep' = {
-  name: 'compute'
-  params: {
-    location: location
-    suffix: suffix
-    subnetId: vnet.outputs.subnetId
-    adminUsername: adminUsername
-    adminPassword: adminPassword
-  }
-}
+// module compute 'modules/compute/windows.bicep' = {
+//   name: 'compute'
+//   params: {
+//     location: location
+//     suffix: suffix
+//     subnetId: vnet.outputs.subnetId
+//     adminUsername: adminUsername
+//     adminPassword: adminPassword
+//   }
+// }
 
 module cosmos 'modules/cosmos/cosmos.bicep' = {
   name: 'cosmos'
@@ -84,43 +84,65 @@ module cosmos 'modules/cosmos/cosmos.bicep' = {
   }
 }
 
-module appServicePlan 'modules/functions/appPlan.bicep' = {
-  name: 'appServicePlan'
-  params: {
-    location: location
-    suffix: suffix
-  }
-}
+// module appServicePlan 'modules/functions/appPlan.bicep' = {
+//   name: 'appServicePlan'
+//   params: {
+//     location: location
+//     suffix: suffix
+//   }
+// }
 
-module functionProcessor 'modules/functions/processor.bicep' = {
-  name: 'functionProcessor'
-  params: {
-    location: location
-    suffix: suffix
-    appInsightCnxString: insight.outputs.appInsightCnxString
-    appInsightKey: insight.outputs.appInsightKey    
-    strAccountApiVersion: storage.outputs.strFunctionApiVersion
-    strAccountId: storage.outputs.strFunctionId
-    strAccountName: storage.outputs.strFunctionName  
-    serverFarmId: appServicePlan.outputs.serverFarmId  
-  }
-}
+// module functionProcessor 'modules/functions/processor.bicep' = {
+//   name: 'functionProcessor'
+//   params: {
+//     location: location
+//     suffix: suffix
+//     appInsightCnxString: insight.outputs.appInsightCnxString
+//     appInsightKey: insight.outputs.appInsightKey    
+//     strAccountApiVersion: storage.outputs.strFunctionApiVersion
+//     strAccountId: storage.outputs.strFunctionId
+//     strAccountName: storage.outputs.strFunctionName  
+//     serverFarmId: appServicePlan.outputs.serverFarmId
+//     formRecognizerEndpoint: cognitives.outputs.frmEndpoint
+//     formRecognizerKey: cognitives.outputs.frmKey
+//     strDocumentName: storage.outputs.strDocumentName
+//     strDocumentId: storage.outputs.strDocumentId
+//     strDocumentApiVersion: storage.outputs.strDocumentApiVersion
+//     cosmosEndpoint: cosmos.outputs.cosmosEndpoint
+//     cosmosKey: cosmos.outputs.cosmosKey
+//     cosmosDatabaseName: cosmos.outputs.databaseNameOutput    
+//   }
+// }
 
-module functionModel 'modules/functions/model.bicep' = {
-  name: 'functionModel'
-  params: {
-    location: location
-    suffix: suffix
-    appInsightCnxString: insight.outputs.appInsightCnxString
-    appInsightKey: insight.outputs.appInsightKey    
-    strAccountApiVersion: storage.outputs.strFunctionApiVersion
-    strAccountId: storage.outputs.strFunctionId
-    strAccountName: storage.outputs.strFunctionName    
-    serverFarmId: appServicePlan.outputs.serverFarmId  
-  }
-}
+// module functionModel 'modules/functions/model.bicep' = {
+//   name: 'functionModel'
+//   params: {
+//     location: location
+//     suffix: suffix
+//     appInsightCnxString: insight.outputs.appInsightCnxString
+//     appInsightKey: insight.outputs.appInsightKey    
+//     strAccountApiVersion: storage.outputs.strFunctionApiVersion
+//     strAccountId: storage.outputs.strFunctionId
+//     strAccountName: storage.outputs.strFunctionName    
+//     serverFarmId: appServicePlan.outputs.serverFarmId  
+//     strModelId: storage.outputs.strDocumentId
+//     strModelName: storage.outputs.strDocumentName
+//     strModelApiVersion: storage.outputs.strDocumentApiVersion
+//     formRecognizerEndpoint: cognitives.outputs.frmEndpoint
+//     formRecognizerKey: cognitives.outputs.frmKey
+//   }
+// }
+
+// module blazorApp 'modules/web/blazor.bicep' = {
+//   name: 'blazorApp'
+//   params: {
+//     location: location
+//     suffix: suffix
+//   }
+// }
 
 
-output vmName string = compute.outputs.vmName
-output functionProcessorName string = functionProcessor.outputs.functionName
-output functionModelName string = functionModel.outputs.functionName
+// output vmName string = compute.outputs.vmName
+// output functionProcessorName string = functionProcessor.outputs.functionName
+// output functionModelName string = functionModel.outputs.functionName
+// output webAppName string = blazorApp.outputs.appName
