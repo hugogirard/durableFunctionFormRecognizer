@@ -34,10 +34,7 @@ param serverFarmId string
 param formRecognizerEndpoint string
 param formRecognizerKey string
 
-param cosmosEndpoint string
-param cosmosKey string
-param cosmosDatabaseName string
-param cosmosContainerName string
+param tableName string
 
 var functionAppName = 'fnc-processor-${suffix}'
 
@@ -74,6 +71,22 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
           value: 'DefaultEndpointsProtocol=https;AccountName=${strDocumentName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strDocumentId, strDocumentApiVersion).keys[0].value}'
         }
         {
+          name: 'TableStorageConnectionString'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${strDocumentName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(strDocumentId, strDocumentApiVersion).keys[0].value}'
+        }
+        {
+          name: 'TableStorageTableName'
+          value: tableName
+        }
+        {
+          name: 'RetryMillisecondsPower'
+          value: '2'
+        }
+        {
+          name: 'RetryMillisecondsFactor'
+          value: '1000'
+        }
+        {
           name: 'FormRecognizerEndpoint'
           value: formRecognizerEndpoint
         }
@@ -84,22 +97,6 @@ resource function 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'FormRecognizerModelId'
           value: 'TBD'
-        }
-        {
-          name: 'CosmosEndpoint'
-          value: cosmosEndpoint
-        }
-        {
-          name: 'CosmosAuthKey'
-          value: cosmosKey
-        }
-        {
-          name: 'CosmosDatabaseId'
-          value: cosmosDatabaseName
-        }
-        {
-          name: 'CosmosContainerId'
-          value: cosmosContainerName
         }
         {
           name: 'WEBSITE_CONTENTSHARE'

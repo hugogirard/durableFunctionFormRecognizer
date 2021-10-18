@@ -24,13 +24,14 @@ on:
 
 jobs:
   create-azure-resources:
-
+    
     runs-on: ubuntu-latest
 
     outputs:
       vmName: ${{ steps.armDeployment.outputs.vmName }}
       functionProcessorName: ${{ steps.armDeployment.outputs.functionProcessorName }}
       functionModelName: ${{ steps.armDeployment.outputs.functionModelName }}
+      webAppName: ${{ steps.armDeployment.outputs.webAppName }}
 
     steps:
 
@@ -61,7 +62,7 @@ jobs:
           parameters: location=${{ github.event.inputs.location }} addressSpaceVnet=${{ github.event.inputs.addressSpaceVnet }} addressSpaceSubnet=${{ github.event.inputs.addressSpaceSubnet }} adminUsername=${{ secrets.ADMIN_USERNAME }} adminPassword=${{ secrets.ADMIN_PASSWORD }}
 
   configure-vm:
-
+     if: ${{ false }}
      needs: create-azure-resources
 
      runs-on: windows-latest
@@ -99,7 +100,7 @@ jobs:
      runs-on: ubuntu-latest
 
      env:
-        AZURE_WEBAPP_PACKAGE_PATH: './src/viewer'
+        AZURE_WEBAPP_PACKAGE_PATH: 'src/viewer'
 
      steps:
 
@@ -117,9 +118,10 @@ jobs:
             
         - name: dotnet build and publish
           run: |
+            pushd './${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
             dotnet restore
             dotnet build --configuration Release
-            dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/output'
+            dotnet publish -c Release -o output
 
         - name: 'Run Azure webapp deploy action using publish profile credentials'
           uses: azure/webapps-deploy@v2
@@ -132,7 +134,7 @@ jobs:
             az logout                        
 
   deploy-processor-function:
-
+     if: ${{ false }}
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
@@ -173,7 +175,7 @@ jobs:
             az logout                  
 
   deploy-model-function:
-     
+     if: ${{ false }}     
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
