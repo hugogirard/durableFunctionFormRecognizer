@@ -24,7 +24,7 @@ on:
 
 jobs:
   create-azure-resources:
-    if: ${{ false }}
+    
     runs-on: ubuntu-latest
 
     outputs:
