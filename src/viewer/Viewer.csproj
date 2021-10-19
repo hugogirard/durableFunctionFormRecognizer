@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http.Json" Version="3.2.1" />
+    <PackageReference Include="Blazored.Toast" Version="3.2.2" />
   </ItemGroup>
 
 </Project>

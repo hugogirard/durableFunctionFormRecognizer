@@ -18,6 +18,7 @@
 * DEMO POC - "AS IS"
 */
 
+using Blazored.Toast;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -45,6 +46,7 @@ namespace Viewer
             services.AddServerSideBlazor();
             services.AddHttpClient();
             services.AddScoped(sp => new HttpClient());
+            services.AddBlazoredToast();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
