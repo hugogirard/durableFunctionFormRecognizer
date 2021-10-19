@@ -17,6 +17,7 @@
 *
 * DEMO POC - "AS IS"
 */
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,7 +38,8 @@ public class TableDocumentService : IDocumentService
         var tasks = new List<Task>();
         foreach(var document in documents)
         {
-            var tableEntity = new TableEntity("1", document.Id);
+            var tableEntity = new TableEntity("1", Guid.NewGuid().ToString());
+            tableEntity.Add("Filename", document.Id);
             tableEntity.Add("State", document.State);
             tableEntity.Add("Exception", document.Exception);
             tableEntity.Add("TransientFailureCount", document.TransientFailureCount);
