@@ -41,7 +41,7 @@ public class TableDocumentService : IDocumentService
             var tableEntity = new TableEntity("1", Guid.NewGuid().ToString());
             tableEntity.Add("Filename", document.Id);
             tableEntity.Add("State", document.State);
-            tableEntity.Add("Exception", document.Exception);
+            tableEntity.Add("Exception", document.Exception ?? String.Empty);
             tableEntity.Add("TransientFailureCount", document.TransientFailureCount);
             tableEntity.Add("Forms", JsonConvert.SerializeObject(document.Forms));
             tasks.Add(tableClient.UpsertEntityAsync<TableEntity>(tableEntity, TableUpdateMode.Merge, CancellationToken.None));
