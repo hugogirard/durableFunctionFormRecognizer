@@ -44,10 +44,10 @@ public class Startup : FunctionsStartup
         var formRecognizerKey = GetConfigValue<string>(config, "FormRecognizerKey", throwIfMissing: true);
         var formRecognizerEndpoint = GetConfigValue<string>(config, "FormRecognizerEndpoint", throwIfMissing: true);
         var formRecognizerModelId = GetConfigValue<string>(config, "FormRecognizerModelId", throwIfMissing: true);
-        var cosmosEndpoint = GetConfigValue<string>(config, "CosmosEndpoint", throwIfMissing: true);
-        var cosmosAuthKey = GetConfigValue<string>(config, "CosmosAuthKey", throwIfMissing: true);
-        var cosmosDatabaseId = GetConfigValue<string>(config, "CosmosDatabaseId", throwIfMissing: true);
-        var cosmosContainerId = GetConfigValue<string>(config, "CosmosContainerId", throwIfMissing: true);
+        // var cosmosEndpoint = GetConfigValue<string>(config, "CosmosEndpoint", throwIfMissing: true);
+        // var cosmosAuthKey = GetConfigValue<string>(config, "CosmosAuthKey", throwIfMissing: true);
+        // var cosmosDatabaseId = GetConfigValue<string>(config, "CosmosDatabaseId", throwIfMissing: true);
+        // var cosmosContainerId = GetConfigValue<string>(config, "CosmosContainerId", throwIfMissing: true);
         var tableStorageConnectionString = GetConfigValue<string>(config, "TableStorageConnectionString", throwIfMissing: true);
         var tableStorageTableName = GetConfigValue<string>(config, "TableStorageTableName", throwIfMissing: true);
         

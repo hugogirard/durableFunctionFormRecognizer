@@ -11,10 +11,14 @@ CollectDelay | Delay between collection passes | 10 seconds
 NoDataDelay | Delay between processing passes when no data | 10 seconds
 MinProcessingTime | Minimum wait after submitting a document to Form Recognizer | 10 seconds
 MaxRetries | Maximum number of retries | 3
+RetryMillisecondsPower | The power used for exponential backoff in ms (ex: 2 => 2^1=2, 2^2=4, 2^3=8) | 2
+RetryMillisecondsFactor | The factor used for exponential backoff in ms (ex: 1000 => 2^1x1000=2000) | 1000
 FormRecognizerEndpoint | Form Recognizer endpoint | N/A
 FormRecognizerKey | Form Recognizer authentication key | N/A
 FormRecognizerModelId | Form Recognizer model Id | N/A
-CosmosEndpoint | Target Cosmos endpoint | N/A
+TableStorageConnectionString | Connection string for the target table storage | N/A
+TableStorageTableName | Name of target table in table storage | N/A
+<!-- CosmosEndpoint | Target Cosmos endpoint | N/A
 CosmosAuthKey | Target Cosmos authentication key | N/A
 CosmosDatabaseId | Target Cosmos database | N/A
-CosmosContainerId | Target Cosmos container | N/A
+CosmosContainerId | Target Cosmos container | N/A -->
