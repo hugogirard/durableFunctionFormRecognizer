@@ -58,8 +58,9 @@ public class Startup : FunctionsStartup
         var retryMillisecondsPower = GetConfigValue<int>(config, "RetryMillisecondsPower", defaultValue: 2);
         var retryMillisecondsFactor = GetConfigValue<int>(config, "RetryMillisecondsFactor", defaultValue: 1000);
         var collectDelay = GetConfigValue<TimeSpan>(config, "CollectDelay", defaultValue: TimeSpan.FromSeconds(10));
-        var noDataDelay = GetConfigValue<TimeSpan>(config, "NoDataDelay", defaultValue: TimeSpan.FromSeconds(10));
-        var minProcessingTime = GetConfigValue<TimeSpan>(config, "MinProcessingTime", defaultValue: TimeSpan.FromSeconds(10));
+        var noDataDelay = GetConfigValue<TimeSpan>(config, "NoDataDelay", defaultValue: TimeSpan.FromSeconds(10));        
+        var formRecognizerTPS = GetConfigValue<int>(config, "FormRecognizerTPS", defaultValue: 15);
+        var formRecognizerMinWaitTime = GetConfigValue<TimeSpan>(config, "FormRecognizerMinWaitTime", defaultValue: TimeSpan.FromSeconds(10));
 
         //builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
         builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
@@ -93,10 +94,13 @@ public class Startup : FunctionsStartup
                                      NbPartitions = nbPartitions, PartitionSize = partitionSize, CollectDelay = collectDelay,
                                      BlobContainerName = blobContainerName});
         
+        var loopDelay = TimeSpan.FromMilliseconds(1000 / formRecognizerTPS * nbPartitions);
+
         builder.Services.AddSingleton<ProcessorOptions>(_ =>
-            new ProcessorOptions() { NbPartitions =nbPartitions, PartitionSize = partitionSize, NoDataDelay = noDataDelay, MinProcessingTime = minProcessingTime,
-                                     BlobContainerName = blobContainerName, FormRecognizerModelId = formRecognizerModelId,
-                                     MaxRetries = maxRetries, RetryMillisecondsPower = retryMillisecondsPower, RetryMillisecondsFactor = retryMillisecondsFactor }); 
+            new ProcessorOptions() { NbPartitions = nbPartitions, PartitionSize = partitionSize, BlobContainerName = blobContainerName,                                     
+                                     FormRecognizerModelId = formRecognizerModelId, FormRecognizerMinWaitTime = formRecognizerMinWaitTime,
+                                     MaxRetries = maxRetries, RetryMillisecondsPower = retryMillisecondsPower, RetryMillisecondsFactor = retryMillisecondsFactor,
+                                     NoDataDelay = noDataDelay, LoopDelay = loopDelay, }); 
     }
 
     private static T GetConfigValue<T>(IConfigurationRoot config, string name, T defaultValue = default(T), bool throwIfMissing = false)

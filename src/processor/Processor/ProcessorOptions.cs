@@ -25,6 +25,7 @@ public class ProcessorOptions : BaseOptions
     public int RetryMillisecondsPower { get; set; }
     public int RetryMillisecondsFactor { get; set; }
     public string FormRecognizerModelId { get; set; }
-    public TimeSpan NoDataDelay { get; set; }
-    public TimeSpan MinProcessingTime { get; set; }
+    public TimeSpan FormRecognizerMinWaitTime { get; set; }
+    public TimeSpan LoopDelay { get; set; }
+    public TimeSpan NoDataDelay { get; set; }    
 }

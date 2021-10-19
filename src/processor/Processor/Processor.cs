@@ -127,6 +127,10 @@ public class Processor
                         processBlobInfos[processBlobInfo.Blob.BlobName].Blob.TransientFailureCount++;
                         throw;
                     }
+                    finally
+                    {
+                        Thread.Sleep(options.LoopDelay);
+                    }
                 });                    
             }
 
@@ -162,7 +166,7 @@ public class Processor
             {   
                 if (!String.IsNullOrEmpty(processBlobInfo.OperationId))
                 {
-                    var timeToSleep = processBlobInfo.StartTime + options.MinProcessingTime - DateTime.Now;
+                    var timeToSleep = processBlobInfo.StartTime + options.FormRecognizerMinWaitTime - DateTime.Now;
                     if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
 
                     var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId, log);                    
