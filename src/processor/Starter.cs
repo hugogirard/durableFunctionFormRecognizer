@@ -69,6 +69,8 @@ public class Starter
         ExecutionContext context,
         ILogger log)
     {
+        log.LogInformation("Clearing state...");
+
         var tasks = new List<Task>();
 
         var instances = await orchestrationClient.ListInstancesAsync(new OrchestrationStatusQueryCondition() {  

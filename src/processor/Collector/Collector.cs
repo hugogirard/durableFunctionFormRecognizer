@@ -64,7 +64,7 @@ public class Collector
                 }
             }
 
-            log.LogInformation($"[Collector] Going to sleep...");
+            log.LogInformation($"[Collector] Going to sleep for {options.CollectDelay.TotalSeconds} seconds...");
             await context.CreateTimer(context.CurrentUtcDateTime.Add(options.CollectDelay), CancellationToken.None);
             
             context.ContinueAsNew(input);

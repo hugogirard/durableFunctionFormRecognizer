@@ -79,7 +79,7 @@ public class Processor
             }
             else
             {
-                log.LogInformation($"{prefix} No blobs to process, going to sleep...");
+                log.LogInformation($"{prefix} No blobs to process, going to sleep for {options.NoDataDelay.TotalSeconds} seconds...");
                 await context.CreateTimer(context.CurrentUtcDateTime.Add(options.NoDataDelay), CancellationToken.None);
             }
 
@@ -115,23 +115,30 @@ public class Processor
 
             foreach (var processBlobInfo in processBlobInfos.Values.ToArray())
             {
-                await policy.Execute(async () => 
+                try
                 {
-                    try
+                    await policy.Execute(async () => 
                     {
-                        processBlobInfos[processBlobInfo.Blob.BlobName] = 
-                            await ProcessBlob(processBlobInfos[processBlobInfo.Blob.BlobName], postMode, log);
-                    }
-                    catch (TransientFailureException)
-                    {
-                        processBlobInfos[processBlobInfo.Blob.BlobName].Blob.TransientFailureCount++;
-                        throw;
-                    }
-                    finally
-                    {
-                        Thread.Sleep(options.LoopDelay);
-                    }
-                });                    
+                        try
+                        {
+                            processBlobInfos[processBlobInfo.Blob.BlobName] = 
+                                await ProcessBlob(processBlobInfos[processBlobInfo.Blob.BlobName], postMode, log);
+                        }
+                        catch (TransientFailureException)
+                        {
+                            processBlobInfos[processBlobInfo.Blob.BlobName].Blob.TransientFailureCount++;
+                            throw;
+                        }
+                        finally
+                        {
+                            Thread.Sleep(options.LoopDelay);
+                        }
+                    });
+                }
+                catch (TransientFailureException)
+                {
+                    log.LogWarning($"Maximum number of retries reached for blob {processBlobInfo.Blob.BlobName}, will stay unprocessed...");
+                } 
             }
 
             postMode = !postMode;
