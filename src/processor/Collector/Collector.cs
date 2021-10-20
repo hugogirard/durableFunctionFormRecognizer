@@ -123,7 +123,7 @@ public class Collector
             }
             else
             {
-                log.LogWarning($"[Collector] Dirty read on blob {cacheBlob.BlobName} after {(DateTime.Now-cacheBlob.StateChangeTime.Value).TotalSeconds}sec");
+                log.LogWarning($"[Collector] Consistency issue on blob {cacheBlob.BlobName} after {(DateTime.Now-cacheBlob.StateChangeTime.Value).TotalSeconds}sec");
             }
         }
         return blobsToRemove;
