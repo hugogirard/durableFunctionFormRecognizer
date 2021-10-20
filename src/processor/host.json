@@ -6,6 +6,14 @@
                 "isEnabled": true,
                 "excludedTypes": "Request"
             }
+        },
+        "logLevel": {
+            "default": "Warning",
+            "Function.Clear.User": "Information",
+            "Function.Start.User": "Information",
+            "Function.Collector.User": "Information",
+            "Function.Processor.User": "Information",
+            "Function.Processor_ProcessPartition.user": "Information"
         }
     },
     "extensions": {
