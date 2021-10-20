@@ -28,4 +28,5 @@ public interface IBlobStorageService
     public Task<Stream> DownloadStream(string blobName);
     public Task UploadStream(string blobName, Stream stream, bool overwite = false);
     public Task UploadFileIfNewAndTag(string sourceFile, string targetFile, string state);
+    public Task<BlobInfo> GetBlob(string blobName);
 }

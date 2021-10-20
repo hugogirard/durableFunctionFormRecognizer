@@ -55,13 +55,13 @@ public class Processor
 
         try
         {
-            var entityId = BlobInfoEntity.GetEntityId(input.PartitionId);
             log.LogInformation($"{prefix} Reserving blobs...");
-            var blobs = await context.CallEntityAsync<IEnumerable<BlobInfo>>(entityId, "Reserve", options.PartitionSize);
+            var blobs = await context.CallEntityAsync<IEnumerable<BlobInfo>>(
+                BlobInfoEntity.EntityId, "Reserve", (input.PartitionId, options.PartitionSize));
 
             if (blobs.Any())
             {
-                log.LogInformation($"{prefix} Processing blobs...");
+                log.LogInformation($"{prefix} Processing {blobs.Count()} blobs...");
                 blobs = await context.CallActivityAsync<IEnumerable<BlobInfo>>("Processor_ProcessPartition", 
                     new ProcessInput() { PartitionId = input.PartitionId, Blobs = blobs });
                 
@@ -71,7 +71,7 @@ public class Processor
                 // Note: This can create a race condition where the Collecter adds back blobs 
                 // already processed but the risk is low
                 log.LogInformation($"{prefix} Clearing blob reservation...");
-                await context.CallEntityAsync(entityId, "ClearReserved");
+                await context.CallEntityAsync(BlobInfoEntity.EntityId, "ClearReserved", (input.PartitionId, blobs));
 
                 input.Stats.TotalProcessed += blobs.Count(x => x.State == BlobInfo.ProcessState.Processed);
                 input.Stats.TotalFailed += blobs.Count(x => x.State == BlobInfo.ProcessState.Failed);
@@ -104,6 +104,7 @@ public class Processor
 
         var policy = Policy
             .Handle<TransientFailureException>()
+            .Or<IncompleteOperationException>()
             .WaitAndRetry(options.MaxRetries, retryAttempt => TimeSpan.FromMilliseconds(
                 Math.Pow(options.RetryMillisecondsPower, retryAttempt) * options.RetryMillisecondsFactor)
             );        
@@ -124,10 +125,20 @@ public class Processor
                             processBlobInfos[processBlobInfo.Blob.BlobName] = 
                                 await ProcessBlob(processBlobInfos[processBlobInfo.Blob.BlobName], postMode, log);
                         }
+                        catch (IncompleteOperationException)
+                        {
+                            throw;
+                        }
                         catch (TransientFailureException)
                         {
-                            processBlobInfos[processBlobInfo.Blob.BlobName].Blob.TransientFailureCount++;
+                            processBlobInfo.Blob.TransientFailureCount++;
                             throw;
+                        }
+                        catch (Exception ex)
+                        {
+                            log.LogError($"{prefix} {ex.ToString()}");
+                            processBlobInfo.Exception = ex.ToString();
+                            processBlobInfo.Blob.State = BlobInfo.ProcessState.Failed;                            
                         }
                         finally
                         {
@@ -135,10 +146,17 @@ public class Processor
                         }
                     });
                 }
-                catch (TransientFailureException)
+                catch (Exception ex)
                 {
-                    log.LogWarning($"Maximum number of retries reached for blob {processBlobInfo.Blob.BlobName}, will stay unprocessed...");
-                } 
+                    if (ex is IncompleteOperationException || ex is TransientFailureException)
+                    {
+                        log.LogWarning($"{prefix} Maximum number of retries reached for blob {processBlobInfo.Blob.BlobName}, will stay unprocessed...");
+                    }
+                    else 
+                    {
+                        throw;
+                    }
+                }  
             }
 
             postMode = !postMode;
@@ -159,45 +177,34 @@ public class Processor
 
     private async Task<ProcessBlobInfo> ProcessBlob(ProcessBlobInfo processBlobInfo, bool postMode, ILogger log)
     {
-        try
+        if (postMode) 
         {
-            if (postMode) 
+            using(var stream = await blobStorageService.DownloadStream(processBlobInfo.Blob.BlobName))
             {
-                using(var stream = await blobStorageService.DownloadStream(processBlobInfo.Blob.BlobName))
-                {
-                    processBlobInfo.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream, log);
-                    processBlobInfo.StartTime = DateTime.Now;
-                }
-            }                
-            else
-            {   
-                if (!String.IsNullOrEmpty(processBlobInfo.OperationId))
-                {
-                    var timeToSleep = processBlobInfo.StartTime + options.FormRecognizerMinWaitTime - DateTime.Now;
-                    if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
-
-                    var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId, log);                    
-                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
-                    if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult) 
-                    {
-                        processBlobInfo.Forms = formRecognizerResult.Forms;
-                        processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
-                    }
-                }
+                processBlobInfo.OperationId = await formRecognizerService.SubmitDocument(options.FormRecognizerModelId, stream, log);
+                processBlobInfo.StartTime = DateTime.Now;
             }
-            return processBlobInfo;
+        }                
+        else
+        {   
+            if (!String.IsNullOrEmpty(processBlobInfo.OperationId))
+            {
+                var timeToSleep = processBlobInfo.StartTime + options.FormRecognizerMinWaitTime - DateTime.Now;
+                if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
+
+                var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId, log);                    
+                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) 
+                    processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
+                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult) 
+                {
+                    processBlobInfo.Forms = formRecognizerResult.Forms;
+                    processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
+                }
+                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.NotCompleted) 
+                    throw new IncompleteOperationException("Form Recognizer processing is incomplete");
+            }
         }
-        catch (TransientFailureException)
-        {
-            throw; // Rethrow this type of exception
-        }
-        catch (Exception e)
-        {
-            log.LogError(e.ToString());
-            processBlobInfo.Exception = e.ToString();
-            processBlobInfo.Blob.State = BlobInfo.ProcessState.Failed;
-            return processBlobInfo;
-        }
+        return processBlobInfo;    
     }
 
     [FunctionName("Processor_UpdateState")]

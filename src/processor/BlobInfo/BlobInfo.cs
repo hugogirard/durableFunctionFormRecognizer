@@ -17,6 +17,7 @@
 *
 * DEMO POC - "AS IS"
 */
+using System;
 using Newtonsoft.Json;
 
 public class BlobInfo
@@ -36,4 +37,7 @@ public class BlobInfo
 
     [JsonProperty("f")]
     public int TransientFailureCount { get; set; }    
+
+    [JsonProperty("c")]
+    public DateTime? StateChangeTime { get; set; }
 }

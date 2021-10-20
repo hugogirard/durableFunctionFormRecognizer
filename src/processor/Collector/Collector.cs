@@ -18,6 +18,8 @@
 * DEMO POC - "AS IS"
 */
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -46,23 +48,32 @@ public class Collector
         {
             log.LogInformation($"[Collector] Counting blobs...");
             var count = await context.CallActivityAsync<int>("Collector_Count", options.NbPartitions);
-            log.LogInformation($"[Collector] Current blob count is {count}");
+            log.LogInformation($"[Collector] Current backlog count is {count}");
 
-            if (count < options.MinBacklogSize)
+            bool newBlobsAvailable = true;
+            while (newBlobsAvailable && count < options.MinBacklogSize)
             {
                 log.LogInformation($"[Collector] Collecting more blobs...");
                 var output = await context.CallActivityAsync<CollectorOutput>("Collector_Collect", input.ContinuationToken);
                 input.ContinuationToken = output.ContinuationToken;
+                newBlobsAvailable = output.Blobs.Any();
 
-                int i = 0;
-                log.LogInformation($"[Collector] Splitting blobs into partitions...");
-                foreach (var blobInfoEntity in output.Blobs.Partition(options.PartitionSize))
+                if (newBlobsAvailable)
                 {
-                    var entityId = BlobInfoEntity.GetEntityId(i);
-                    context.SignalEntity(entityId, "AddIfNew", blobInfoEntity);
-                    i++;
+                    log.LogInformation($"[Collector] Adding blobs to the backlog...");
+                    var newCount = await context.CallEntityAsync<int>(BlobInfoEntity.EntityId, "AddToBacklog", output.Blobs);
+                    log.LogInformation($"[Collector] Current backlog count is {newCount}");
+                    newBlobsAvailable = newCount > count;
+                    count = newCount;
                 }
             }
+
+            if (!newBlobsAvailable) log.LogWarning($"[Collector] No new blobs available in blob storage...");
+
+            log.LogInformation($"[Collector] Starting cleanup...");
+            var cache = await context.CallEntityAsync<IEnumerable<BlobInfo>>(BlobInfoEntity.EntityId, "GetCache");
+            var blobsToRemove = await context.CallActivityAsync<IEnumerable<BlobInfo>>("Collector_Cleanup", cache);
+            await context.CallEntityAsync(BlobInfoEntity.EntityId, "RemoveFromCache", blobsToRemove);
 
             log.LogInformation($"[Collector] Going to sleep for {options.CollectDelay.TotalSeconds} seconds...");
             await context.CreateTimer(context.CurrentUtcDateTime.Add(options.CollectDelay), CancellationToken.None);
@@ -81,17 +92,9 @@ public class Collector
     [FunctionName("Collector_Count")]
     public async Task<int> GetCount([ActivityTrigger] int nbPartitions, [DurableClient] IDurableEntityClient client, ILogger log)
     {
-        var count = 0;
-        for (int i = 0; i < nbPartitions; i++)
-        {
-            var entityId = BlobInfoEntity.GetEntityId(i);
-            var state = await client.ReadEntityStateAsync<BlobInfoEntity>(entityId);
-            if (state.EntityExists)
-            {
-                count += state.EntityState.Count();
-            }
-        }
-        return count;
+        var state = await client.ReadEntityStateAsync<BlobInfoEntity>(BlobInfoEntity.EntityId);
+        if (state.EntityExists) return state.EntityState.CountBacklog();
+        return 0;
     }
 
     [FunctionName("Collector_Collect")]
@@ -106,4 +109,23 @@ public class Collector
         log.LogWarning($"[Collector] Restarting collector...");
         await client.StartNewAsync<CollectorInput>("Collector", input);
     }
+
+    [FunctionName("Collector_Cleanup")]
+    public async Task<IEnumerable<BlobInfo>> Cleanup([ActivityTrigger] IEnumerable<BlobInfo> cache, ILogger log)
+    {
+        var blobsToRemove = new List<BlobInfo>();
+        foreach(var cacheBlob in cache)
+        {
+            var storageBlob = await blobStorageService.GetBlob(cacheBlob.BlobName);
+            if (storageBlob.State == cacheBlob.State) 
+            {
+                blobsToRemove.Add(cacheBlob);
+            }
+            else
+            {
+                log.LogWarning($"[Collector] Dirty read on blob {cacheBlob.BlobName} after {(DateTime.Now-cacheBlob.StateChangeTime.Value).TotalSeconds}sec");
+            }
+        }
+        return blobsToRemove;
+    }    
 }

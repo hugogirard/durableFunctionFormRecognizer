@@ -29,57 +29,92 @@ public class BlobInfoEntity
 {
     public BlobInfoEntity()
     {
-        // Using a dictionary to reduce serialization size
-        Blobs = new Dictionary<bool, List<BlobInfo>>();
-        Blobs[true] = new List<BlobInfo>();
-        Blobs[false] = new List<BlobInfo>();
+        Backlog = new List<BlobInfo>();
+        Partitions = new Dictionary<int, List<BlobInfo>>();
+        Cache = new List<BlobInfo>();
     }
 
     [JsonProperty("b")]
-    public Dictionary<bool, List<BlobInfo>> Blobs { get; set; }
+    public List<BlobInfo> Backlog { get; set; }
 
-    private List<BlobInfo> Reserved => Blobs[true];
-    private List<BlobInfo> Unreserved => Blobs[false];
-    private IEnumerable<BlobInfo> AllBlobs => Unreserved.Concat(Reserved); 
+    [JsonProperty("p")]
+    public Dictionary<int, List<BlobInfo>> Partitions { get; set; }
 
-    public void Clear() => Blobs.Clear();
+    [JsonProperty("c")]
+    public List<BlobInfo> Cache { get; set; }
 
-    public int Count() => Reserved.Count + Unreserved.Count;
-    
-    public IEnumerable<BlobInfo> Reserve(int maximumAmount)
+    public void Clear()
     {
-        if (!Reserved.Any())
-        {
-            if (!Unreserved.Any()) return Enumerable.Empty<BlobInfo>();             
+        Backlog.Clear();
+        Partitions.Clear();
+        Cache.Clear();
+    }
 
-            var amount = Math.Min(Unreserved.Count, maximumAmount);
-            Reserved.AddRange(Unreserved.Take(amount));
-            Unreserved.RemoveRange(0, amount);
+    public int CountBacklog() => Backlog.Count;
+    
+    public IEnumerable<BlobInfo> Reserve((int partitionId, int maximumAmount) input)
+    {
+        if (!Partitions.ContainsKey(input.partitionId))
+        {
+            Partitions[input.partitionId] = new List<BlobInfo>();
         }
 
-        return Reserved;
+        if (Partitions[input.partitionId].Count == 0)
+        {
+            if (Backlog.Count == 0) return Enumerable.Empty<BlobInfo>();             
+
+            var amount = Math.Min(Backlog.Count, input.maximumAmount);
+            Partitions[input.partitionId].AddRange(Backlog.Take(amount));
+            Backlog.RemoveRange(0, amount);
+        }
+
+        return Partitions[input.partitionId];
     }
 
-    public void ClearReserved()
+    public void ClearReserved((int partitionId, IEnumerable<BlobInfo> blobs) input)
     {
-        Reserved.Clear();
+        var now = DateTime.Now;
+        foreach(var blob in input.blobs)
+            blob.StateChangeTime = now;
+        Cache.AddRange(input.blobs);
+
+        if (Partitions.ContainsKey(input.partitionId))
+            Partitions[input.partitionId].Clear();
     }
 
-    public void AddIfNew(IEnumerable<BlobInfo> blobs) 
+    public int AddToBacklog(IEnumerable<BlobInfo> blobs) 
     {
-        var blobIndex = AllBlobs.ToDictionary(x => x.BlobName);
+        var backlogIndex = Backlog.ToDictionary(x => x.BlobName);
+        var partitionIndex = Partitions.Values.SelectMany(x => x).ToDictionary(x => x.BlobName);
+        var cacheIndex = Cache.ToDictionary(x => x.BlobName);
 
         foreach(var blob in blobs)
         {
-            if (!blobIndex.ContainsKey(blob.BlobName))
-                Unreserved.Add(blob);
+            if (!backlogIndex.ContainsKey(blob.BlobName) && 
+                !partitionIndex.ContainsKey(blob.BlobName) &&
+                !cacheIndex.ContainsKey(blob.BlobName))
+            {
+                Backlog.Add(blob);
+            }
         }
+
+        return Backlog.Count;
     }
 
-    public static EntityId GetEntityId(int partitionId)
+    public IEnumerable<BlobInfo> GetCache() => Cache;
+
+    public void RemoveFromCache(IEnumerable<BlobInfo> blobs)
     {
-        return new EntityId("BlobInfoEntity", $"{partitionId:000}");
-    }
+        var cacheIndex = Cache.ToDictionary(x => x.BlobName);
+
+        foreach (var blob in blobs)
+        {
+            if (cacheIndex.ContainsKey(blob.BlobName))
+                Cache.Remove(cacheIndex[blob.BlobName]);
+        }        
+    }    
+
+    public static readonly EntityId EntityId = new EntityId("BlobInfoEntity", "1");
 
     [FunctionName(nameof(BlobInfoEntity))]
     public static Task Run([EntityTrigger] IDurableEntityContext context) => context.DispatchAsync<BlobInfoEntity>();

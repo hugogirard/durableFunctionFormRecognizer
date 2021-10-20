@@ -58,4 +58,9 @@ public class BlobMockStorageService : IBlobStorageService
     {        
         return Task.CompletedTask;
     }
+
+    public Task<BlobInfo> GetBlob(string blobName)
+    {
+        return Task.FromResult(new BlobInfo() { BlobName = blobName, State = BlobInfo.ProcessState.Processed });
+    }
 }

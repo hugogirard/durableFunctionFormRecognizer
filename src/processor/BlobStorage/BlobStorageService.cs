@@ -87,4 +87,11 @@ public class BlobStorageService : IBlobStorageService
             await blobClient.SetTagsAsync(new Dictionary<string, string>() { { "status", state } });
         }, TaskContinuationOptions.AttachedToParent);        
     }
+
+    public async Task<BlobInfo> GetBlob(string blobName)
+    {
+        var blobClient = blobServiceClient.GetBlobContainerClient(blobContainerName).GetBlobClient(blobName);
+        var tags = await blobClient.GetTagsAsync();
+        return new BlobInfo() { BlobName = blobName, State = Enum.Parse<BlobInfo.ProcessState>(tags.Value.Tags["status"], true) };
+    }
 }

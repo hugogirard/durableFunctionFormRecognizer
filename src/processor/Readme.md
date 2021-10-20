@@ -3,7 +3,7 @@
 Name | Description | Default value
 ---- | ----------- | -------------
 BatchSize | Number of blobs to collect in one pass | 2
-MinBacklogSize | Number of blobs the collector keeps ready to process | 4
+MinBacklogSize | Number of blobs the collector keeps ready to process | 2
 NbPartitions | Number of partitions for processing | 1
 BlobContainerName | Name of source the blob container | N/A
 StorageAccountConnectionString | Connection string of the source storage | N/A
