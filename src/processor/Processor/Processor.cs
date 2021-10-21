@@ -105,7 +105,7 @@ public class Processor
         var policy = Policy
             .Handle<TransientFailureException>()
             .Or<IncompleteOperationException>()
-            .WaitAndRetry(options.MaxRetries, retryAttempt => TimeSpan.FromMilliseconds(
+            .WaitAndRetryAsync(options.MaxRetries, retryAttempt => TimeSpan.FromMilliseconds(
                 Math.Pow(options.RetryMillisecondsPower, retryAttempt) * options.RetryMillisecondsFactor)
             );        
 
@@ -118,7 +118,7 @@ public class Processor
             {
                 try
                 {
-                    await policy.Execute(async () => 
+                    await policy.ExecuteAsync(async () => 
                     {
                         try
                         {
