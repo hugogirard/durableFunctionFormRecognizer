@@ -24,14 +24,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 public class BlobInfoEntity
 {
-    public BlobInfoEntity()
+    [JsonIgnore]
+    private ILogger logger;
+
+    public BlobInfoEntity(ILogger<BlobInfoEntity> logger)
     {
+        this.logger = logger;
         Backlog = new List<BlobInfo>();
         Partitions = new Dictionary<int, List<BlobInfo>>();
-        Cache = new List<BlobInfo>();
+        Cache = new List<BlobInfo>();        
     }
 
     [JsonProperty("b")]
@@ -44,7 +49,7 @@ public class BlobInfoEntity
     public List<BlobInfo> Cache { get; set; }
 
     public void Clear()
-    {
+    {        
         Backlog.Clear();
         Partitions.Clear();
         Cache.Clear();
@@ -73,10 +78,21 @@ public class BlobInfoEntity
 
     public void ClearReserved((int partitionId, IEnumerable<BlobInfo> blobs) input)
     {
+        var cacheIndex = Cache.ToDictionary(x => x.BlobName);
+
         var now = DateTime.Now;
         foreach(var blob in input.blobs)
-            blob.StateChangeTime = now;
-        Cache.AddRange(input.blobs);
+        {
+            if (cacheIndex.ContainsKey(blob.BlobName))
+            {
+                logger.LogWarning($"[BlobInfoEntity] Blob {blob.BlobName} was already present in the cache...");
+            }
+            else
+            {
+                blob.StateChangeTime = now;
+                Cache.Add(blob);                
+            }
+        }
 
         if (Partitions.ContainsKey(input.partitionId))
             Partitions[input.partitionId].Clear();
