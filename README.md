@@ -1,5 +1,6 @@
 - [About this sample](#about-this-sample)
 - [Architecture](#architecture)
+- [Azure Resources deployed in this sample](azure-resources-deployed-in-this-sample)
   - [Seeder](#seeder)
   - [Storage Document](storage-(document))
   - [Storage Functions](storage-(functions))
@@ -8,6 +9,7 @@
   - [Durable Function Processor](durable-function-processor)
     - [Durable Function Flow](durable-function-flow)
   - [Blazor Server Viewer](blazor-server-viewer)
+- [Installation](installation)
 
 # About this sample
 
@@ -34,6 +36,8 @@ Here in more details each part of this architecture.
 4 - The blazor viewer app retrieves the log from the table storage
 
 5 - If needed, the blazor viewer app can terminate any processor function app
+
+# Azure Resources deployed in this sample
 
 ## Seeder
 
@@ -87,3 +91,8 @@ This Blazor application show all the processor function progress. From there you
 ## Monitoring
 
 All Azure functions log their metric in Application Insight and Log Analytics.
+
+# Installation
+
+This section describe all the steps you need to install this sample in your Azure environment.
+
