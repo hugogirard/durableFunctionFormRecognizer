@@ -17,7 +17,7 @@ The goal of this sample it's to illustrate a Cloud Pattern to process multiple d
 
 # Architecture
 
-![architecture](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/durableFunction.png)
+![architecture](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/architecture.png)
 
 Here in more details each part of this architecture.
 
