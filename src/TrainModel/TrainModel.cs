@@ -44,7 +44,7 @@ namespace TrainModel
             _blobContainerClient = blobContainerClient;
         }
 
-        [FunctionName("TrainModel")]
+        [FunctionName("TrainCustomModel")]
         public async Task<IActionResult> TrainCustomModel(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
@@ -73,6 +73,29 @@ namespace TrainModel
                 log.LogError(ex.Message, ex);
                 return new ObjectResult("Internal Server Error") { StatusCode = 500 };
             }
+        }
+
+        [FunctionName("GetCustomModel")]
+        public async Task<IActionResult> GetModel([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req,
+                                                   ILogger log)
+        {
+                string modelId = req.Query["modelId"];
+
+                if (string.IsNullOrEmpty(modelId)) 
+                {
+                    return new BadRequestObjectResult("The query string modelId need to be present");
+                }
+
+                var response = await _trainingClient.GetCustomModelAsync(modelId);
+
+                if (!response.GetRawResponse().Status.IsSuccessStatusCode())
+                {                    
+                    return new BadRequestObjectResult("Cannot retrieve the model");
+                }
+
+                return new OkObjectResult(response.Value);
+
+
         }
 
         [FunctionName("GetCustomModels")]
