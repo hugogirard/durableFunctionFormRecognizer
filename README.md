@@ -36,7 +36,7 @@ This storage is used by all Azure Functions in the architecture for their intern
 
 ## Train Model Function
 
-This Azure function will train the Custom Model in Form Recognizer.  Four endpoints are provided in this Azure Function.
+This Azure function will train the [Custom Model](https://docs.microsoft.com/en-us/azure/applied-ai-services/form-recognizer/concept-custom) in Form Recognizer.  Four endpoints are provided in this Azure Function.
 
 | Endpoint | HTTP Verb |Description
 |----------|------------|----------
@@ -44,3 +44,11 @@ This Azure function will train the Custom Model in Form Recognizer.  Four endpoi
 | /api/GetCustomModel | GET | This endpoint return the definition of a specific custom model
 | /api/GetCustomModels | GET | This endpoint return all custom models trained in Form Recognizer
 | /api/DeleteCustomModel | DELETE | This endpoint delete a specific custom trained model.
+
+## Form Recognizer
+
+Azure Applied AI Services, uses machine learning technology to identify and extract key-value pairs and table data from form documents.  For more information about Form Recognizer click [here](https://docs.microsoft.com/en-us/azure/applied-ai-services/form-recognizer/).
+
+## Durable Function Processor
+
+This function app start two [eternal durable functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-eternal-orchestrations?tabs=csharp)
