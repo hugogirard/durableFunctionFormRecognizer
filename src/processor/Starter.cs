@@ -73,20 +73,15 @@ public class Starter
 
         var tasks = new List<Task>();
 
-        var instances = await orchestrationClient.ListInstancesAsync(new OrchestrationStatusQueryCondition() {  
-            RuntimeStatus = new OrchestrationRuntimeStatus[] { OrchestrationRuntimeStatus.Running },
-           }, CancellationToken.None);
-
-        foreach(var instance in instances.DurableOrchestrationState.Where(x => x.Name == "Processor" || x.Name == "Collector"))
-        {
+        foreach(var instance in await GetAllOrchestrations(orchestrationClient, new string[] { "Collector", "Processor" }))
+        { 
+            log.LogInformation($"Terminating orchestration {instance.InstanceId}...");
             tasks.Add(orchestrationClient.TerminateAsync(instance.InstanceId, "Termination requested by user"));
         }
 
-        var entities = await entityClient.ListEntitiesAsync(
-            new EntityQuery() { EntityName="blobinfoentity" }, CancellationToken.None);
-
-        foreach(var entity in entities.Entities)
+        foreach(var entity in await GetAllEntities(entityClient, "blobinfoentity"))
         {
+            log.LogInformation($"Clearing entity {entity.EntityId}...");
             tasks.Add(entityClient.SignalEntityAsync(entity.EntityId, "Clear"));
         }
 
@@ -144,10 +139,42 @@ public class Starter
             await orchestrationClient.PurgeInstanceHistoryAsync(instanceId);
         }
 
-        var instances = await orchestrationClient.ListInstancesAsync(
-            new OrchestrationStatusQueryCondition(), CancellationToken.None);
+        return new JsonResult(await GetAllOrchestrations(orchestrationClient, new string[] { "Collector", "Processor" }));
+    }
 
-        return new JsonResult(instances.DurableOrchestrationState.Where(
-            x => x.Name == "Collector" || x.Name == "Processor"));
+    private static async Task<IEnumerable<DurableOrchestrationStatus>> GetAllOrchestrations(IDurableOrchestrationClient orchestrationClient, string[] names)
+    {
+        string continuationToken = null;
+        var allInstances = new List<DurableOrchestrationStatus>();
+        do
+        {
+            var condition = new OrchestrationStatusQueryCondition();
+            condition.ContinuationToken = continuationToken;
+            var result = await orchestrationClient.ListInstancesAsync(
+                condition, CancellationToken.None);
+            continuationToken = result.ContinuationToken;
+            allInstances.AddRange(result.DurableOrchestrationState.Where(
+                i => names.Any(n => n == i.Name)));
+        }
+        while (!String.IsNullOrEmpty(continuationToken));
+        return allInstances;
+    }
+
+    private static async Task<IEnumerable<DurableEntityStatus>> GetAllEntities(IDurableEntityClient entityClient, string name)
+    {
+        string continuationToken = null;
+        var allInstances = new List<DurableEntityStatus>();
+        do
+        {
+            var condition = new EntityQuery();
+            condition.EntityName = name;
+            condition.ContinuationToken = continuationToken;
+            var result = await entityClient.ListEntitiesAsync(
+                condition, CancellationToken.None);
+            continuationToken = result.ContinuationToken;
+            allInstances.AddRange(result.Entities);
+        }
+        while (!String.IsNullOrEmpty(continuationToken));
+        return allInstances;
     }
 }

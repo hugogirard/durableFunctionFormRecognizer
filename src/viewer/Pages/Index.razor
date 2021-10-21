@@ -78,7 +78,7 @@ else
                     <td>@collectorInstance.LastUpdatedTime.ToLocalTime()</td>
                     <td>@(DateTime.Now - collectorInstance.CreatedTime.ToLocalTime())</td>
                     <td>@collectorInstance.Output.GetRawText()</td>
-                    <td>@input.PreviousInstanceId</td>
+                    <td>@input?.PreviousInstanceId</td>
                     <td>
                         <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@collectorInstance.InstanceId))">Restart</a>
                         <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@collectorInstance.InstanceId))">Terminate</a>
@@ -98,16 +98,16 @@ else
                     <td>@processorInstance.LastUpdatedTime.ToLocalTime()</td>
                     <td>@(DateTime.Now - processorInstance.CreatedTime.ToLocalTime())</td>
                     <td>@processorInstance.Output.GetRawText()</td>
-                    <td>@input.PreviousInstanceId</td>
+                    <td>@input?.PreviousInstanceId</td>
                     <td>
                         <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@processorInstance.InstanceId))">Restart</a>
                         <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@processorInstance.InstanceId))">Terminate</a>
                         <a href="javascript: void(0)" @onclick="@(async _ => await Purge(@processorInstance.InstanceId))">Purge</a>
                     </td>
-                    <td>@input.PartitionId</td>
-                    <td>@input.Stats.TotalProcessed</td>
-                    <td>@input.Stats.TotalFailed</td>
-                    <td>@input.Stats.TotalTransientFailures</td>
+                    <td>@input?.PartitionId</td>
+                    <td>@input?.Stats.TotalProcessed</td>
+                    <td>@input?.Stats.TotalFailed</td>
+                    <td>@input?.Stats.TotalTransientFailures</td>
                 </tr>
             }
         </tbody>
