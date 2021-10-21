@@ -3,6 +3,11 @@
   - [Seeder](#seeder)
   - [Storage Document](storage-(document))
   - [Storage Functions](storage-(functions))
+  - [Train Model Function](train-model-function)
+  - [Form Recognizer](form-recognizer)
+  - [Durable Function Processor](durable-function-processor)
+    - [Durable Function Flow](durable-function-flow)
+  - [Blazor Server Viewer](blazor-server-viewer)
 
 # About this sample
 
@@ -13,6 +18,22 @@ The goal of this sample it's to illustrate a Cloud Pattern to process multiple d
 ![architecture](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/durableFunction.png)
 
 Here in more details each part of this architecture.
+
+1 - The seeder sends X document with the tag status with the value unprocessed to the container document in Azure Storage.
+
+2a - The train model function is getting a SAS from the model container.
+
+2b - The function is sending the path of the container and all metadata to form recognizer.
+
+3c - Form recognizer retrieve all the files that are needed to create the custom model and train the model.
+
+3a - The processor function start retrieving documents (blob) from the storage.
+
+3b - The processor function is sending the documents to be analyzed to form recognizer.
+
+4 - The blazor viewer app retrieves the log from the table storage
+
+5 - If needed, the blazor viewer app can terminate any processor function app
 
 ## Seeder
 
@@ -52,3 +73,17 @@ Azure Applied AI Services, uses machine learning technology to identify and extr
 ## Durable Function Processor
 
 This function app start two [eternal durable functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-eternal-orchestrations?tabs=csharp)
+
+![function](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/flow.png)
+
+### Durable Function Flow
+
+TBD
+
+## Blazor Server Viewer
+
+This Blazor application show all the processor function progress. From there you can follow each instance of the processor function, terminate the function and see any exception and metric related to the processing flow.
+
+## Monitoring
+
+All Azure functions log their metric in Application Insight and Log Analytics.
