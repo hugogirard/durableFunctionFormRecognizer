@@ -171,3 +171,30 @@ Now you can follow the Github Action running by clicking the execution.
 This should take some time, once everything finish to run proceed to next step.
 
 ![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/stepsgh.png)
+
+## Step 5 - Train the model
+
+Now that everything is deployed correctly you need to train the model in Form Recognizer.
+
+Clone the git repository on your machine, you will see a **folder** called **model**.
+
+![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/stepsgh.png)
+
+Now, go to the Azure Portal with the in the new resource group that contains all the resource.
+
+You will see two Azure Storage there, you need to go to the one that have a **tag description** with the value **Document Storage**.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/tag.png)
+
+Go to the left menu and click on Containers
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/containers.png)
+
+Click on the **models** container and upload all the document from the git you cloned from the model folder.  **Don't upload the file from the subfolder empty**.
+
+Your storage should contain those files.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/files.png)
+
+Go back to the resource group in Azure, you will see two function, one starting with fnc-model-trainer and the other called fnc-processor.  **Click** on the function **fnc-model-trainer**.
+
