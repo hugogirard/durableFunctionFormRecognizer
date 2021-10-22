@@ -62,7 +62,6 @@ jobs:
           parameters: location=${{ github.event.inputs.location }} addressSpaceVnet=${{ github.event.inputs.addressSpaceVnet }} addressSpaceSubnet=${{ github.event.inputs.addressSpaceSubnet }} adminUsername=${{ secrets.ADMIN_USERNAME }} adminPassword=${{ secrets.ADMIN_PASSWORD }}
 
   configure-vm:
-     if: ${{ false }}
      needs: create-azure-resources
 
      runs-on: windows-latest
@@ -134,7 +133,6 @@ jobs:
             az logout                        
 
   deploy-processor-function:
-     if: ${{ false }}
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
@@ -174,8 +172,7 @@ jobs:
           run: |
             az logout                  
 
-  deploy-model-function:
-     if: ${{ false }}     
+  deploy-model-function:  
      needs: create-azure-resources
 
      runs-on: ubuntu-latest
