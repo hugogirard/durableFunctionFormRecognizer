@@ -113,4 +113,14 @@ The ouput will look like this below.  Copy paste it in your clipboard.
 ![sp](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/spoutput.png)
 
 
+## Step 3 - Create needed Github Secrets
 
+For the Github Action to run properly you need to create 3 secrets.
+
+First go to the Settings tab.
+
+![settings](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/settings.png)
+
+Next click the **Secrets** button in the left menu.
+
+![leftmenu](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/leftmenu.png)
