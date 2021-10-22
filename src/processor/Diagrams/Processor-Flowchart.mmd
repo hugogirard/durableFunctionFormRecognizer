@@ -1,0 +1,8 @@
+flowchart TD
+    A[Start] --> B;
+    B[Reserve 100 blobs] --> C{Blobs available?}
+    C --> Yes --> D;
+    C --> No --> F;
+    D[Process 100 blobs] --> E;
+    E[Release 100 blobs] --> A;
+    F[Sleep] --> A;

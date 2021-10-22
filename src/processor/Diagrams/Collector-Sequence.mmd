@@ -1,0 +1,9 @@
+sequenceDiagram
+    Collector->>Durable Entity: Count
+    Durable Entity-->>Collector: Backlog size
+    alt Backlog size too small
+        Collector->>Blob Storage: Query unprocessed blobs
+        Blob Storage-->>Collector: Unprocessed blobs
+        Collector->>Durable Entity: Add blobs if non existant
+    end
+    Collector->>Collector: Sleep

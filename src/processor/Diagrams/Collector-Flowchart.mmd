@@ -1,0 +1,6 @@
+flowchart TD
+    A[Start] --> B{<1000 blobs};
+    B -- Yes --> C;
+    B -- No --> D;
+    C[Add 1000 blobs to backlog] --> D;
+    D[Sleep] --> A;

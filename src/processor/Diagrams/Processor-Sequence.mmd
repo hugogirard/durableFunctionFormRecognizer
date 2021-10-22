@@ -1,0 +1,15 @@
+sequenceDiagram
+    Processor->>Durable Entity: Reserve
+    Durable Entity-->>Processor: 100 blobs
+    loop Post documents to Form Recognizer
+        Processor->>Blob Storage: Get blob
+        Blob Storage-->>Processor: Blob
+        Processor->>Form Recognizer: Submit Document
+    end
+    loop Get results from Form Recognizer
+        Processor->>Form Recognizer: Get Result
+        Form Recognizer-->>Processor: Analyzed form
+    end
+    Processor->>Table Storage: Analyzed forms
+    Processor->>Blob Storage: Update tags
+    Processor->>Durable Entity: Release reservation
