@@ -198,3 +198,4 @@ Your storage should contain those files.
 
 Go back to the resource group in Azure, you will see two function, one starting with fnc-model-trainer and the other called fnc-processor.  **Click** on the function **fnc-model-trainer**.
 
+Now click on the Functions item to the left menu.
