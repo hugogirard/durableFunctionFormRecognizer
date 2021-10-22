@@ -13,6 +13,7 @@
   - [Step 1 - Github Repository](step-1-fork-the-github-repository)
   - [Step 2 - Create a Service Principal](step-2-create-a-service-principal-needed-for-the-github-action)
   - [Step 3 - Create Github Secrets](step-3-create-needed-github-secrets)
+  - [Step 4 - Step 4 - Run the Github Action](step-4-run-the-github-action)
 
 # About this sample
 
@@ -137,3 +138,36 @@ You will need to create three secrets.
 | ADMIN_USERNAME | This is the username needed to login in the Seeder VM
 | ADMIN_PASSWORD | This is the secret needed to login in the Seeder VM
 | AZURE_CREDENTIALS | This is the value returned when creating the Service Principal from the step before
+
+## Step 4 - Run the Github Action
+
+Now it is time to deploy and create all resources in Azure.  To do this, go to the Github Action tab.
+
+![action](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/actionmenu.png)
+
+Because you **forked** this git you won't see by default the Github action, you will need to enable it.
+
+![action](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/enablegh.png)
+
+Once the Github Action is enabled, you will see on action in the left menu called **Deploy**.  Select it and in the right you will see a drop-down list with the action Run workflow.  
+
+Click on it, you can leave the default parameters in place or change them if you want.
+
+![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/workflow.png)
+
+| Parameter | Description
+|-----------|------------
+| Name of the resource group | This is the name of the resource group created in Azure that will contain all the resources.
+| Location | This is where all resources will be created
+| CIDR VNET | This is the CIDR address of the VNET that will contain the Seeder VM
+| CIDR Subnet | This is the CIDR that will contain the VM
+
+When you are ready, click the green button **Run workflow**
+
+Now you can follow the Github Action running by clicking the execution.
+
+![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/execution.png)
+
+This should take some time, once everything finish to run proceed to next step.
+
+![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/stepsgh.png)
