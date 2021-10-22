@@ -62,7 +62,7 @@ public class FormRecognizerService : IFormRecognizerService
                 if (operation.HasValue) return new FormRecognizerResult() { Forms = operation.Value, Status = FormRecognizerResult.ResultStatus.CompletedWithResult };
                 return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.CompletedWithoutResult };
             }
-            return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.NotCompleted };;
+            throw new IncompleteOperationException();
         }
         catch (RequestFailedException ex)
         {

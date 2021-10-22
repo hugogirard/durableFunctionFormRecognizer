@@ -2,9 +2,9 @@
 
 Name | Description | Default value
 ---- | ----------- | -------------
-BatchSize | Number of blobs to collect in one pass | 2
-MinBacklogSize | Number of blobs the collector keeps ready to process | 2
-NbPartitions | Number of partitions for processing | 1
+BatchSize | Number of blobs to collect in one pass | 1000
+MinBacklogSize | Number of blobs the collector keeps ready to process | 1000
+NbPartitions | Number of partitions for processing | 10
 BlobContainerName | Name of source the blob container | N/A
 StorageAccountConnectionString | Connection string of the source storage | N/A
 CollectDelay | Delay between collection passes | 10 seconds
@@ -19,7 +19,3 @@ FormRecognizerTPS | The number of TPS of the Form Recognizer instance | 15
 FormRecognizerMinWaitTime | Minimum wait time after submitting a document to Form Recognizer before querying for result | 10 seconds
 TableStorageConnectionString | Connection string for the target table storage | N/A
 TableStorageTableName | Name of target table in table storage | N/A
-<!-- CosmosEndpoint | Target Cosmos endpoint | N/A
-CosmosAuthKey | Target Cosmos authentication key | N/A
-CosmosDatabaseId | Target Cosmos database | N/A
-CosmosContainerId | Target Cosmos container | N/A -->

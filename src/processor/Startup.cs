@@ -20,14 +20,11 @@
 using System;
 using System.Net.Http;
 using Azure.AI.FormRecognizer;
-using Azure.Core;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -44,16 +41,12 @@ public class Startup : FunctionsStartup
         var formRecognizerKey = GetConfigValue<string>(config, "FormRecognizerKey", throwIfMissing: true);
         var formRecognizerEndpoint = GetConfigValue<string>(config, "FormRecognizerEndpoint", throwIfMissing: true);
         var formRecognizerModelId = GetConfigValue<string>(config, "FormRecognizerModelId", throwIfMissing: true);
-        // var cosmosEndpoint = GetConfigValue<string>(config, "CosmosEndpoint", throwIfMissing: true);
-        // var cosmosAuthKey = GetConfigValue<string>(config, "CosmosAuthKey", throwIfMissing: true);
-        // var cosmosDatabaseId = GetConfigValue<string>(config, "CosmosDatabaseId", throwIfMissing: true);
-        // var cosmosContainerId = GetConfigValue<string>(config, "CosmosContainerId", throwIfMissing: true);
         var tableStorageConnectionString = GetConfigValue<string>(config, "TableStorageConnectionString", throwIfMissing: true);
         var tableStorageTableName = GetConfigValue<string>(config, "TableStorageTableName", throwIfMissing: true);
         
-        var batchSize = GetConfigValue<int>(config, "BatchSize", defaultValue: 5);
-        var minBacklogSize = GetConfigValue<int>(config, "MinBacklogSize", defaultValue: 10);
-        var nbPartitions = GetConfigValue<int>(config, "NbPartitions", defaultValue: 1);
+        var batchSize = GetConfigValue<int>(config, "BatchSize", defaultValue: 1000);
+        var minBacklogSize = GetConfigValue<int>(config, "MinBacklogSize", defaultValue: 1000);
+        var nbPartitions = GetConfigValue<int>(config, "NbPartitions", defaultValue: 10);
         var maxRetries = GetConfigValue<int>(config, "MaxRetries", defaultValue: 3);
         var retryMillisecondsPower = GetConfigValue<int>(config, "RetryMillisecondsPower", defaultValue: 2);
         var retryMillisecondsFactor = GetConfigValue<int>(config, "RetryMillisecondsFactor", defaultValue: 1000);
@@ -62,7 +55,7 @@ public class Startup : FunctionsStartup
         var formRecognizerTPS = GetConfigValue<int>(config, "FormRecognizerTPS", defaultValue: 15);
         var formRecognizerMinWaitTime = GetConfigValue<TimeSpan>(config, "FormRecognizerMinWaitTime", defaultValue: TimeSpan.FromSeconds(10));
 
-        //builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
+        // builder.Services.AddSingleton<IBlobStorageService>(_ => new BlobMockStorageService());
         builder.Services.AddSingleton<IBlobStorageService>(sp => new BlobStorageService(
             blobContainerName, new BlobServiceClient(storageAccountConnectionString)));
 
@@ -78,14 +71,10 @@ public class Startup : FunctionsStartup
                 new Azure.AzureKeyCredential(formRecognizerKey), formRecognizerClientOptions));
         });
 
-        builder.Services.AddSingleton<IDocumentService>(_ => new DocumentMockService());
+        //builder.Services.AddSingleton<IDocumentService>(_ => new DocumentMockService());
         builder.Services.AddSingleton<IDocumentService>(_ => {
             return new TableDocumentService(new TableClient(tableStorageConnectionString, tableStorageTableName));
         });
-        // builder.Services.AddSingleton<ICosmosService>(_ => {
-        //     var client = new CosmosClient(cosmosEndpoint, cosmosAuthKey, new CosmosClientOptions() { AllowBulkExecution = true });
-        //     return new CosmosService(client.GetContainer(cosmosDatabaseId, cosmosContainerId), 100 / nbPartitions);
-        // });
 
         var partitionSize = (int)Math.Ceiling((double)batchSize / nbPartitions);
 

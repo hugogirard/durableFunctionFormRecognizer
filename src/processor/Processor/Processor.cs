@@ -68,10 +68,8 @@ public class Processor
                 log.LogInformation($"{prefix} Updating blob states...");
                 await context.CallActivityAsync("Processor_UpdateState", blobs);
 
-                // Note: This can create a race condition where the Collecter adds back blobs 
-                // already processed but the risk is low
                 log.LogInformation($"{prefix} Clearing blob reservation...");
-                await context.CallEntityAsync(BlobInfoEntity.EntityId, "ClearReserved", (input.PartitionId, blobs));
+                await context.CallEntityAsync(BlobInfoEntity.EntityId, "ClearReserved", input.PartitionId);
 
                 input.Stats.TotalProcessed += blobs.Count(x => x.State == BlobInfo.ProcessState.Processed);
                 input.Stats.TotalFailed += blobs.Count(x => x.State == BlobInfo.ProcessState.Failed);
@@ -164,7 +162,8 @@ public class Processor
         while (!postMode);
  
         log.LogInformation($"{prefix} Saving documents...");
-        await documentService.SaveDocuments(processBlobInfos.Values.Select(x => new Document() { 
+        await documentService.SaveDocuments(processBlobInfos.Values.Where(x => x.Blob.State != BlobInfo.ProcessState.Unprocessed).
+            Select(x => new Document() { 
                 Id = x.Blob.BlobName,
                 State = x.Blob.State.ToString(),
                 Forms = x.Forms?.Select(x => new Document.Form(x)),
@@ -193,15 +192,12 @@ public class Processor
                 if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
 
                 var formRecognizerResult = await formRecognizerService.RetreiveResults(processBlobInfo.OperationId, log);                    
-                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) 
-                    processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
-                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult) 
+                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithResult || 
+                    formRecognizerResult.Status == FormRecognizerResult.ResultStatus.CompletedWithoutResult) 
                 {
                     processBlobInfo.Forms = formRecognizerResult.Forms;
                     processBlobInfo.Blob.State = BlobInfo.ProcessState.Processed;
                 }
-                if (formRecognizerResult.Status == FormRecognizerResult.ResultStatus.NotCompleted) 
-                    throw new IncompleteOperationException("Form Recognizer processing is incomplete");
             }
         }
         return processBlobInfo;    

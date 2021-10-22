@@ -37,15 +37,15 @@ public class FormRecognizerMockService : IFormRecognizerService
 
     public async Task<string> SubmitDocument(string modelId, Stream stream, ILogger log)
     {
-        // Simulate failures and latency
-        var rnd = new Random();
-        if (rnd.Next(1, 20) == 1) throw new ApplicationException("Simulated failure...");
-        if (rnd.Next(1, 20) == 2) { Thread.Sleep(2000); log.LogInformation("Simulated delay..."); }
-        if (rnd.Next(1, 20) == 3)
-        {
-            log.LogWarning("Simulated transient failure...");
-            throw new TransientFailureException();
-        }      
+        // // Simulate failures and latency
+        // var rnd = new Random();
+        // if (rnd.Next(1, 20) == 1) throw new ApplicationException("Simulated failure...");
+        // if (rnd.Next(1, 20) == 2) { Thread.Sleep(2000); log.LogInformation("Simulated delay..."); }
+        // if (rnd.Next(1, 20) == 3)
+        // {
+        //     log.LogWarning("Simulated transient failure...");
+        //     throw new TransientFailureException();
+        // }      
 
         if (serviceUrl != null)
         {
@@ -57,15 +57,15 @@ public class FormRecognizerMockService : IFormRecognizerService
 
     public async Task<FormRecognizerResult> RetreiveResults(string operationId, ILogger log)
     {
-        // Simulate failures and latency
-        var rnd = new Random();
-        if (rnd.Next(1, 20) == 1) throw new ApplicationException("Simulated failure...");
-        if (rnd.Next(1, 20) == 2) { Thread.Sleep(2000); log.LogInformation("Simulated delay..."); }
-        if (rnd.Next(1, 20) == 3)
-        {
-            log.LogInformation("Simulated transient failure...");
-            throw new TransientFailureException();
-        }     
+        // // Simulate failures and latency
+        // var rnd = new Random();
+        // if (rnd.Next(1, 20) == 1) throw new ApplicationException("Simulated failure...");
+        // if (rnd.Next(1, 20) == 2) { Thread.Sleep(2000); log.LogInformation("Simulated delay..."); }
+        // if (rnd.Next(1, 20) == 3)
+        // {
+        //     log.LogInformation("Simulated transient failure...");
+        //     throw new TransientFailureException();
+        // }     
 
         if (serviceUrl != null)
         {

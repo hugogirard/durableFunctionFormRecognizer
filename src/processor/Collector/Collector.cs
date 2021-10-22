@@ -70,11 +70,6 @@ public class Collector
 
             if (!newBlobsAvailable) log.LogWarning($"[Collector] No new blobs available in blob storage...");
 
-            log.LogInformation($"[Collector] Starting cleanup...");
-            var cache = await context.CallEntityAsync<IEnumerable<BlobInfo>>(BlobInfoEntity.EntityId, "GetCache");
-            var blobsToRemove = await context.CallActivityAsync<IEnumerable<BlobInfo>>("Collector_Cleanup", cache);
-            await context.CallEntityAsync(BlobInfoEntity.EntityId, "RemoveFromCache", blobsToRemove);
-
             log.LogInformation($"[Collector] Going to sleep for {options.CollectDelay.TotalSeconds} seconds...");
             await context.CreateTimer(context.CurrentUtcDateTime.Add(options.CollectDelay), CancellationToken.None);
             
@@ -108,24 +103,5 @@ public class Collector
     {
         log.LogWarning($"[Collector] Restarting collector...");
         await client.StartNewAsync<CollectorInput>("Collector", input);
-    }
-
-    [FunctionName("Collector_Cleanup")]
-    public async Task<IEnumerable<BlobInfo>> Cleanup([ActivityTrigger] IEnumerable<BlobInfo> cache, ILogger log)
-    {
-        var blobsToRemove = new List<BlobInfo>();
-        foreach(var cacheBlob in cache)
-        {
-            var storageBlob = await blobStorageService.GetBlob(cacheBlob.BlobName);
-            if (storageBlob.State == cacheBlob.State) 
-            {
-                blobsToRemove.Add(cacheBlob);
-            }
-            else
-            {
-                log.LogWarning($"[Collector] Consistency issue on blob {cacheBlob.BlobName} after {(DateTime.Now-cacheBlob.StateChangeTime.Value).TotalSeconds}sec");
-            }
-        }
-        return blobsToRemove;
-    }    
+    }   
 }
