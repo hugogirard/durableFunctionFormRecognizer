@@ -14,6 +14,7 @@
   - [Step 2 - Create a Service Principal](step-2-create-a-service-principal-needed-for-the-github-action)
   - [Step 3 - Create Github Secrets](step-3-create-needed-github-secrets)
   - [Step 4 - Step 4 - Run the Github Action](step-4-run-the-github-action)
+  - [Step 5 - Train the model](step-5-train-the-model)
 
 # About this sample
 
@@ -199,3 +200,29 @@ Your storage should contain those files.
 Go back to the resource group in Azure, you will see two function, one starting with fnc-model-trainer and the other called fnc-processor.  **Click** on the function **fnc-model-trainer**.
 
 Now click on the Functions item to the left menu.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/func.png)
+
+Click on the **TrainCustomModel**.
+
+Click in the left menu to **Code + Test**
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/codetest.png)
+
+Now click in the menu at the top **Test/Run** button.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/testrun.png)
+
+In the new window that appear to the left you will see **Query** and a button **+ Add header**, click on it.
+
+From there you need to provide in the field name the value **modelName** and in the field value you can enter **JobModel**.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/postparameters.png)
+
+Now click on the blue button **Run**.
+
+Is important you take note of the modelId returned after the Azure function finished to been executed.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/modelid.png)
+
+If you forget to take note of the modelId you can always retrieve it using the other endpoint of the Azure Function (see section above).
