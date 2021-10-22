@@ -81,13 +81,27 @@ Azure Applied AI Services, uses machine learning technology to identify and extr
 
 ## Durable Function Processor
 
-This function app start two [eternal durable functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-eternal-orchestrations?tabs=csharp)
+This function app uses two types of [eternal durable functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-eternal-orchestrations?tabs=csharp) (Collector and Processor) and a [durable entity](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-entities) (BlobInfoEntity).
 
-![function](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/flow.png)
+### Collector
 
-### Durable Function Flow
+#### Flow chart:
 
-TBD
+![Collector flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Flowchart.svg)
+
+#### Sequence digram:
+
+![Collector sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Sequence.svg)
+
+## Processor
+
+#### Flow chart:
+
+![Processor flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Flowchart.svg)
+
+#### Sequence digram:
+
+![Processor sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Sequence.svg)
 
 ## Blazor Server Viewer
 
