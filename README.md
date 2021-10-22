@@ -10,6 +10,9 @@
     - [Durable Function Flow](durable-function-flow)
   - [Blazor Server Viewer](blazor-server-viewer)
 - [Installation](installation)
+  - [Step 1 - Github Repository](step-1-fork-the-github-repository)
+  - [Step 2 - Create a Service Principal](step-2-create-a-service-principal-needed-for-the-github-action)
+  - [Step 3 - Create Github Secrets](step-3-create-needed-github-secrets)
 
 # About this sample
 
@@ -124,3 +127,13 @@ First go to the Settings tab.
 Next click the **Secrets** button in the left menu.
 
 ![leftmenu](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/leftmenu.png)
+
+You will need to create three secrets.
+
+![secrets](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/secrets.png)
+
+| Secret Name | Description 
+|-------------|------------
+| ADMIN_USERNAME | This is the username needed to login in the Seeder VM
+| ADMIN_PASSWORD | This is the secret needed to login in the Seeder VM
+| AZURE_CREDENTIALS | This is the value returned when creating the Service Principal from the step before
