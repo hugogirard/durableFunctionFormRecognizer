@@ -6,8 +6,7 @@
   - [Storage Functions](storage-(functions))
   - [Train Model Function](train-model-function)
   - [Form Recognizer](form-recognizer)
-  - [Durable Function Processor](durable-function-processor)
-    - [Durable Function Flow](durable-function-flow)
+  - [Durable Function Processor](#durable-function-processor)
   - [Blazor Server Viewer](blazor-server-viewer)
 - [Installation](installation)
   - [Step 1 - Github Repository](step-1-fork-the-github-repository)
@@ -87,21 +86,21 @@ This function app uses two types of [eternal durable functions](https://docs.mic
 
 #### Flow chart:
 
-![Collector flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Flowchart.svg)
+![Collector flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Flowchart.png)
 
 #### Sequence digram:
 
-![Collector sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Sequence.svg)
+![Collector sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Sequence.png)
 
 ## Processor
 
 #### Flow chart:
 
-![Processor flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Flowchart.svg)
+![Processor flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Flowchart.png)
 
 #### Sequence digram:
 
-![Processor sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Sequence.svg)
+![Processor sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Sequence.png)
 
 ## Blazor Server Viewer
 
