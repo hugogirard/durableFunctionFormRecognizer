@@ -66,15 +66,13 @@ namespace SeederApp
 
                 for (int i = 0; i < index; i++)
                 {
-                    var activityResult = await seederService.StartProcessingTasks(factor);
-                    Console.WriteLine($"Processed batch documents");
+                    var activityResult = await seederService.StartProcessingTasks(factor);                    
                     Aggregate(activityResult, result);
                 }
 
                 if (left > 0)
                 {
-                    var activityResult = await seederService.StartProcessingTasks(left);
-                    Console.WriteLine($"Processed batch documents");
+                    var activityResult = await seederService.StartProcessingTasks(left);                    
                     Aggregate(activityResult, result);
                 }
 
@@ -98,9 +96,10 @@ namespace SeederApp
             uploadResult.TotalSuccessDocument += results.Count(r => r.IsSucces);
             uploadResult.TotalFailureDocument += results.Count(r => !r.IsSucces);
 
-            Console.WriteLine("Aggregate");
-            Console.WriteLine($"TotalSuccessDocument: {results.Count(r => r.IsSucces)}");
-            Console.WriteLine($"TotalFailureDocument: {results.Count(r => !r.IsSucces)}");
+            Console.WriteLine("Batch Completed");
+            Console.WriteLine("Total Processed");
+            Console.WriteLine($"TotalSuccessDocument: {uploadResult.TotalSuccessDocument}");
+            Console.WriteLine($"TotalFailureDocument: {uploadResult.TotalFailureDocument}");
         }
     }
 }

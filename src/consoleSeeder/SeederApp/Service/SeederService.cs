@@ -60,11 +60,20 @@ namespace SeederApp.Service
 
             var tasks = new Queue<Task<ActivityResult>>();
 
-            string filepath = $"{Directory.GetCurrentDirectory()}\\Documents\\ceo.pdf";
+            string[] files = new []
+            {
+                 $"{Directory.GetCurrentDirectory()}\\Documents\\generic1.pdf",
+                 $"{Directory.GetCurrentDirectory()}\\Documents\\generic2.pdf",
+                 $"{Directory.GetCurrentDirectory()}\\Documents\\generic3.pdf"
+            };
+
+            var random = new Random();
 
             for (int i = 0; i < index; i++)
             {
                 string filename = $"{Guid.NewGuid().ToString()}.pdf";
+                int idx = random.Next(0,2);
+                string filepath = files[idx];
                 tasks.Enqueue(UploadBlobAndTag(filename, filepath, options));
             }
 
