@@ -19,6 +19,15 @@
     <Content Include="Documents\ceo.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Documents\generic1.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Documents\generic2.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Documents\generic3.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>            
     <Content Include="global.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
