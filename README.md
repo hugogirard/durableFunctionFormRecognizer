@@ -239,3 +239,54 @@ Is important you take note of the modelId returned after the Azure function fini
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/modelid.png)
 
 If you forget to take note of the modelId you can always retrieve it using the other endpoint of the Azure Function (see section above).
+
+## Step 6 - Run the Seeder App
+
+Now, you need to generate some documents so the processor function can send them to Form Recognizer.  To do so, you will need to connect to the Azure Virtual Machine called **seeder** in your **resource group**.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/seeder.png)
+
+By default you cannot connect to the Virtual Machine, the port 3389 is not open and protected by the [Network Security Group](https://docs.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview).
+
+If you are using Azure Security Defender you can activate the [Just-in-Time access](https://docs.microsoft.com/en-us/azure/security-center/security-center-just-in-time?tabs=jit-config-asc%2Cjit-request-asc).  Be aware, you need to have Azure Security Defender Standard and some cost are associated to this. 
+
+The other option is to modify the NSG called **nsg-seeder**.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/nsg-seeder.png)
+
+You can add a new inbound security rules to give access to the port 3389 but **ONLY** for your **IP address**.  You don't want to open 3389 to Internet, we recommend the Just-In-Time access this is more secure.
+
+If you want to modify the NSG rule it will look like something like this.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/inbound.png)
+
+One you activated the JIT or modified the NSG you can connect to your virtual machine, using the credentials you created in the **GITHUB Secrets**.
+
+Once you are in the virtual machine, open File Explorer and go to the path **C:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp**
+
+You will see a file called **appsettings.json**, open it with Notepad.
+
+You need to add the value for **storageAccountName**, this is the name of your storage account that contains the following tag.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/strtag.png)
+
+In this case the value of **storageAccountName** will be **strdap3y4htuhu44u**.
+
+The next value you need to add is **storageCnxString**, this is the connection string of the storage found before.  To get the connection string you need to click on Access keys in the storage.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/accesskey.png)
+
+From there, you can click the Show keys button at the top and copy your connection string in the appsettings.json file.
+
+The other value that is importat is the **nbrDocuments**, this is the number of document you want to add in the storage.  To be sure to not have a big surprise if you add multiples documents refer to the [Azure Pricing for Form Recognizer](https://azure.microsoft.com/en-us/pricing/details/form-recognizer/).  In our case all documents created contains only one page.
+
+To calculate the pricing you need to use the document type Custom, so if we take this example (pricing change often this picture can be different than your actual pricing).
+
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/frmpricing.png)
+
+If you enter the value **1000** for the nbrDocuments because the pricing is 50$ USD for 1000 pages and all documents are 1 page this will cost you around 50 USD.
+
+
+
+
