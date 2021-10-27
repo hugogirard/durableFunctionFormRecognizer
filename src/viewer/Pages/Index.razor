@@ -32,6 +32,11 @@
 
 <h1>Diagnostics</h1>
 
+<p>
+    <a href="javascript: void(0)" @onclick="@(async _ => await Start())">Start</a> |
+    <a href="javascript: void(0)" @onclick="@(async _ => await Clear())">Clear</a>
+</p>
+
 <p>Current work rate is @workrate.ToString("0.0") docs/sec</p>
 
 <p>
@@ -80,8 +85,8 @@ else
                     <td>@collectorInstance.Output.GetRawText()</td>
                     <td>@input?.PreviousInstanceId</td>
                     <td>
-                        <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@collectorInstance.InstanceId))">Restart</a>
-                        <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@collectorInstance.InstanceId))">Terminate</a>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@collectorInstance.InstanceId))">Restart</a> |
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@collectorInstance.InstanceId))">Terminate</a> |
                         <a href="javascript: void(0)" @onclick="@(async _ => await Purge(@collectorInstance.InstanceId))">Purge</a>
                     </td>
                 </tr>
@@ -100,8 +105,8 @@ else
                     <td>@processorInstance.Output.GetRawText()</td>
                     <td>@input?.PreviousInstanceId</td>
                     <td>
-                        <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@processorInstance.InstanceId))">Restart</a>
-                        <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@processorInstance.InstanceId))">Terminate</a>
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Restart(@processorInstance.InstanceId))">Restart</a> |
+                        <a href="javascript: void(0)" @onclick="@(async _ => await Terminate(@processorInstance.InstanceId))">Terminate</a> |
                         <a href="javascript: void(0)" @onclick="@(async _ => await Purge(@processorInstance.InstanceId))">Purge</a>
                     </td>
                     <td>@input?.PartitionId</td>
@@ -152,7 +157,7 @@ else
     private bool hideFailed = true;
 
     protected override async Task OnInitializedAsync()
-    {
+    {        
         await Reload();
     }
 
@@ -164,13 +169,20 @@ else
         }
     }
 
+    private HttpClient GetHttpClient()
+    {
+        if (!http.DefaultRequestHeaders.Contains("x-functions-key"))
+            http.DefaultRequestHeaders.Add("x-functions-key", config["APIKey"]);
+        return http;
+    }
+
     private async Task Reload()
     {
         try
         {
-            toastService.ClearErrorToasts();
+            //toastService.ClearErrorToasts();
 
-            var instances = await http.GetFromJsonAsync<DurableOrchestrationStatus[]>(config["EndpointUrl"]);
+            var instances = await GetHttpClient().GetFromJsonAsync<DurableOrchestrationStatus[]>($"{config["EndpointUrl"]}/api/Diagnostics");
             collectorInstances = instances.Where(x => x.Name == "Collector" && 
                 (!hideTerminated ||
                 x.RuntimeStatus != DurableOrchestrationStatus.OrchestrationRuntimeStatus.Terminated) &&
@@ -210,23 +222,40 @@ else
         await Reload();
     }
 
+    private async Task Start()
+    {
+        var result = await GetHttpClient().GetAsync($"{config["EndpointUrl"]}/api/Start");
+        toastService.ShowInfo(result.StatusCode.ToString());
+        await Reload();
+    }
+
+    private async Task Clear()
+    {
+        var result = await GetHttpClient().GetAsync($"{config["EndpointUrl"]}/api/Clear");        
+        toastService.ShowInfo(result.StatusCode.ToString());
+        await Reload();
+    }        
+
     private async Task Restart(string instanceId)
     {
-        await http.PostAsync(config["EndpointUrl"], new StringContent(instanceId));
+        var result = await GetHttpClient().PostAsync($"{config["EndpointUrl"]}/api/Diagnostics", new StringContent(instanceId));
+        toastService.ShowInfo(result.StatusCode.ToString());
         await Reload();
     }
 
     private async Task Terminate(string instanceId)
     {
-        await http.PatchAsync(config["EndpointUrl"], new StringContent(instanceId));
+        var result = await GetHttpClient().PatchAsync($"{config["EndpointUrl"]}/api/Diagnostics", new StringContent(instanceId));
+        toastService.ShowInfo(result.StatusCode.ToString());
         await Reload();
     }
 
     private async Task Purge(string instanceId)
     {
-        var message = new HttpRequestMessage(HttpMethod.Delete, config["EndpointUrl"]);
+        var message = new HttpRequestMessage(HttpMethod.Delete, $"{config["EndpointUrl"]}/api/Diagnostics");
         message.Content = new StringContent(instanceId);
-        await http.SendAsync(message);
+        var result = await GetHttpClient().SendAsync(message);
+        toastService.ShowInfo(result.StatusCode.ToString());
         await Reload();
     }
 }

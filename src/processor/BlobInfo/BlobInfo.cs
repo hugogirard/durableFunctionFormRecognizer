@@ -37,4 +37,7 @@ public class BlobInfo
 
     [JsonProperty("f")]
     public int TransientFailureCount { get; set; }
+
+    [JsonProperty("c")]
+    public DateTime? StateChangeTime { get; set; }    
 }

@@ -36,6 +36,7 @@ public class BlobInfoEntity
         this.logger = logger;
         Backlog = new List<BlobInfo>();
         Partitions = new Dictionary<int, List<BlobInfo>>();
+        Cache = new List<BlobInfo>();
     }
 
     [JsonProperty("b")]
@@ -44,10 +45,14 @@ public class BlobInfoEntity
     [JsonProperty("p")]
     public Dictionary<int, List<BlobInfo>> Partitions { get; set; }
 
+    [JsonProperty("c")]
+    public List<BlobInfo> Cache { get; set; }    
+
     public void Clear()
     {        
         Backlog.Clear();
         Partitions.Clear();
+        Cache.Clear();
     }
 
     public int CountBacklog() => Backlog.Count;
@@ -71,27 +76,61 @@ public class BlobInfoEntity
         return Partitions[input.partitionId];
     }
 
-    public void ClearReserved(int partitionId)
+    public void ClearReserved((int partitionId, IEnumerable<BlobInfo> blobs) input)
     {
-        if (Partitions.ContainsKey(partitionId))
-            Partitions[partitionId].Clear();
+        var cacheIndex = Cache.ToDictionary(x => x.BlobName);
+
+        var now = DateTime.Now;
+        foreach(var blob in input.blobs)
+        {
+            if (cacheIndex.ContainsKey(blob.BlobName))
+            {
+                logger.LogWarning($"[BlobInfoEntity] Blob {blob.BlobName} was already present in the cache...");
+            }
+            else
+            {
+                blob.StateChangeTime = now;
+                Cache.Add(blob);                
+            }
+        }
+
+        if (Partitions.ContainsKey(input.partitionId))
+            Partitions[input.partitionId].Clear();
     }
 
     public int AddToBacklog(IEnumerable<BlobInfo> blobs) 
     {
         var backlogIndex = Backlog.ToDictionary(x => x.BlobName);
         var partitionIndex = Partitions.Values.SelectMany(x => x).ToDictionary(x => x.BlobName);
+        var cacheIndex = Cache.ToDictionary(x => x.BlobName);
 
         foreach(var blob in blobs)
         {
-            if (!backlogIndex.ContainsKey(blob.BlobName) && !partitionIndex.ContainsKey(blob.BlobName))
+            if (cacheIndex.ContainsKey(blob.BlobName))
+                logger.LogInformation($"Cache hit for {blob.BlobName}");
+
+            if (!backlogIndex.ContainsKey(blob.BlobName) && 
+                !partitionIndex.ContainsKey(blob.BlobName) &&
+                !cacheIndex.ContainsKey(blob.BlobName))
             {
                 Backlog.Add(blob);
             }
         }
-
         return Backlog.Count;
     }
+
+    public IEnumerable<BlobInfo> GetCache() => Cache;
+
+    public void RemoveFromCache(IEnumerable<BlobInfo> blobs)
+    {
+        var cacheIndex = Cache.ToDictionary(x => x.BlobName);
+
+        foreach (var blob in blobs)
+        {
+            if (cacheIndex.ContainsKey(blob.BlobName))
+                Cache.Remove(cacheIndex[blob.BlobName]);
+        }        
+    }    
 
     public static readonly EntityId EntityId = new EntityId("BlobInfoEntity", "1");
 

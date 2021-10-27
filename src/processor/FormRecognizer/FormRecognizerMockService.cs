@@ -50,7 +50,7 @@ public class FormRecognizerMockService : IFormRecognizerService
         if (serviceUrl != null)
         {
             var client = httpClientFactory.CreateClient();
-            var result = await client.GetAsync(serviceUrl);
+            await client.PostAsync(serviceUrl, new StreamContent(stream));
         }
         return Guid.NewGuid().ToString();
     }    

@@ -43,7 +43,7 @@ public class Starter
 
     [FunctionName("Start")]
     public async Task<HttpResponseMessage> HttpStart(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
         [DurableClient] IDurableOrchestrationClient starter,
         ExecutionContext context,
         ILogger log)
@@ -63,7 +63,7 @@ public class Starter
 
     [FunctionName("Clear")]
     public async Task<IActionResult> HttpClear(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
         [DurableClient] IDurableEntityClient entityClient,
         [DurableClient] IDurableOrchestrationClient orchestrationClient,
         ExecutionContext context,
@@ -75,8 +75,11 @@ public class Starter
 
         foreach(var instance in await GetAllOrchestrations(orchestrationClient, new string[] { "Collector", "Processor" }))
         { 
-            log.LogInformation($"Terminating orchestration {instance.InstanceId}...");
-            tasks.Add(orchestrationClient.TerminateAsync(instance.InstanceId, "Termination requested by user"));
+            if (instance.RuntimeStatus == OrchestrationRuntimeStatus.Running)
+            {
+                log.LogInformation($"Terminating orchestration {instance.InstanceId}...");
+                tasks.Add(orchestrationClient.TerminateAsync(instance.InstanceId, "Termination requested by user"));
+            }
         }
 
         foreach(var entity in await GetAllEntities(entityClient, "blobinfoentity"))
@@ -92,7 +95,7 @@ public class Starter
 
     [FunctionName("Seed")]
     public async Task HttpSeed(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
         ExecutionContext context,
         ILogger log)
     {
@@ -116,7 +119,7 @@ public class Starter
 
     [FunctionName("Diagnostics")]
     public async Task<IActionResult> HttpDiagnostics(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", "patch", "delete")] HttpRequestMessage req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post", "patch", "delete")] HttpRequestMessage req,
         [DurableClient] IDurableOrchestrationClient orchestrationClient,
         ExecutionContext context,
         ILogger log)

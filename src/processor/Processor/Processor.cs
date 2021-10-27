@@ -19,6 +19,7 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,7 +70,7 @@ public class Processor
                 await context.CallActivityAsync("Processor_UpdateState", blobs);
 
                 log.LogInformation($"{prefix} Clearing blob reservation...");
-                await context.CallEntityAsync(BlobInfoEntity.EntityId, "ClearReserved", input.PartitionId);
+                await context.CallEntityAsync(BlobInfoEntity.EntityId, "ClearReserved", (input.PartitionId, blobs));
 
                 input.Stats.TotalProcessed += blobs.Count(x => x.State == BlobInfo.ProcessState.Processed);
                 input.Stats.TotalFailed += blobs.Count(x => x.State == BlobInfo.ProcessState.Failed);
@@ -118,6 +119,8 @@ public class Processor
                 {
                     await policy.ExecuteAsync(async () => 
                     {
+                        var watch = Stopwatch.StartNew();
+
                         try
                         {
                             processBlobInfos[processBlobInfo.Blob.BlobName] = 
@@ -140,7 +143,9 @@ public class Processor
                         }
                         finally
                         {
-                            Thread.Sleep(options.LoopDelay);
+                            var delay = TimeSpan.FromMilliseconds(Math.Max(
+                                0, (options.LoopDelay-watch.Elapsed).TotalMilliseconds));
+                            Thread.Sleep(delay);
                         }
                     });
                 }
