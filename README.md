@@ -84,6 +84,8 @@ This function app uses two types of [eternal durable functions](https://docs.mic
 
 ### Collector
 
+The Collector is a single-instance eternal function which is responsible of fetching unprocessed blobs. The goal is to maintain a sufficient backlog, so the Processors never run out of blobs tor process. It runs every 10 seconds by default.
+
 #### Flow chart:
 
 ![Collector flow chart](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Flowchart.png)
@@ -93,6 +95,14 @@ This function app uses two types of [eternal durable functions](https://docs.mic
 ![Collector sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Sequence.png)
 
 ## Processor
+
+The Processor consists of multiple instances or an eternal function. It's responsible for sending the blobs to Form Recognizer for processing, saving the results and updating the blobs states.
+
+Each instance has its own partition (or slice) of blobs to process. For example, if batch size is 1000 and there's 10 instances, every instance will process 100 blobs per execution.
+
+It starts by sending the whole partition to Form Recognizer and before starting to query for results. This prevents wasting transactions (which count towards the TPS limit) to query results before Form Recognizer has completed its processing.
+
+The results are saved to table storage, including the form fields and the OCR of the document. In case of a failure, the exception information is also included. If the call is throttled by Form Recognizer (transient failure), the processor will automatically retry.
 
 #### Flow chart:
 
