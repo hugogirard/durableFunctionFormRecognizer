@@ -20,7 +20,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -42,23 +44,41 @@ public class Starter
     }
 
     [FunctionName("Start")]
-    public async Task<HttpResponseMessage> HttpStart(
+    public async Task<IActionResult> HttpStart(
         [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
-        [DurableClient] IDurableOrchestrationClient starter,
+        [DurableClient] IDurableOrchestrationClient client,
         ExecutionContext context,
         ILogger log)
     {
-        string instanceId = await starter.StartNewAsync("Collector");    
-        log.LogInformation($"Started Collector with ID = '{instanceId}'.");
+        var instances = await GetAllOrchestrations(client, new string[] { "Collector", "Processor" });
+
+        if (instances.Any(x => x.Name == "Collector" && x.RuntimeStatus == OrchestrationRuntimeStatus.Running))
+        {
+            log.LogWarning($"Collector is already running...");
+        }
+        else
+        {
+            string instanceId = await client.StartNewAsync("Collector");    
+            log.LogInformation($"Started Collector with ID = '{instanceId}'.");
+        }
+
+        var processorInstances = instances.Where(x => x.Name == "Processor" && x.RuntimeStatus == OrchestrationRuntimeStatus.Running);
 
         for (int i = 0; i < processorOptions.NbPartitions; i++)
         {
-            instanceId = await starter.StartNewAsync<ProcessorInput>("Processor", 
-                new ProcessorInput() { PartitionId = i });
-            log.LogInformation($"Started Processor orchestration with ID = '{instanceId}'.");
+            if (processorInstances.Any(x => x.Input.ToObject<ProcessorInput>().PartitionId == i))
+            {
+                log.LogWarning($"Processor #{i} is already running...");
+            }
+            else
+            {
+                string instanceId = await client.StartNewAsync<ProcessorInput>("Processor", 
+                    new ProcessorInput() { PartitionId = i });
+                log.LogInformation($"Started Processor #{i} orchestration with ID = '{instanceId}'.");
+            }
         }        
 
-        return starter.CreateCheckStatusResponse(req, instanceId);
+        return new OkObjectResult("Start complete");
     }
 
     [FunctionName("Clear")]
