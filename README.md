@@ -203,7 +203,7 @@ Now that everything is deployed correctly you need to train the model in Form Re
 
 Clone the git repository on your machine, you will see a **folder** called **model**.
 
-![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/stepsgh.png)
+![workflow](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/folder.png)
 
 Now, go to the Azure Portal in the new resource group that contains all the resources.
 
@@ -237,7 +237,7 @@ Now click on the top **Test/Run** button on the top menu.
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/testrun.png)
 
-In the new window that appears to the left, you will see **Query** and a button **+ Add header**, click on it.
+In the new window that appears to the left, you will see **Query** and a button **+ Add parameter**, click on it.
 
 From there, you need to enter **modelName** as the Name and **JobModel** as the Value.
 
@@ -314,7 +314,44 @@ Now you are ready to run the seeder, to do this execute this command.
 ```
 dotnet bin\Release\net5.0\SeederApp.dll
 ```
-## Step 7 - Open the viewer
+
+## Step 7 - Configure the processor function
+
+You will need to change one configuration of the processor functions, all settings use default value (that you can change) or are set during the creation of the resources.  
+
+Here the list of all settings of the processor function
+
+Name | Description | Default value
+---- | ----------- | -------------
+BatchSize | Number of blobs to collect in one pass | 1000
+MinBacklogSize | Number of blobs the collector keeps ready to process | 1000
+NbPartitions | Number of partitions for processing | 10
+BlobContainerName | Name of source the blob container | Set during Github Action
+StorageAccountConnectionString | Connection string of the source storage | Set during Github Action
+CollectDelay | Delay between collection passes | 10 seconds
+NoDataDelay | Delay between processing passes when no data | 10 seconds
+MaxRetries | Maximum number of retries | 3
+RetryMillisecondsPower | The power used for exponential backoff in ms (ex: 2 => 2^1=2, 2^2=4, 2^3=8) | 2
+RetryMillisecondsFactor | The factor used for exponential backoff in ms (ex: 1000 => 2^1x1000=2000) | 1000
+FormRecognizerEndpoint | Form Recognizer endpoint | Set during Github Action
+FormRecognizerKey | Form Recognizer authentication key | Set during Github Action
+FormRecognizerModelId | Form Recognizer model Id | **To be added after step 5**
+FormRecognizerTPS | The number of TPS of the Form Recognizer instance | 15
+FormRecognizerMinWaitTime | Minimum wait time after submitting a document to Form Recognizer before querying for result | 10 seconds
+TableStorageConnectionString | Connection string for the target table storage | Set during Github Action
+TableStorageTableName | Name of target table in table storage | Set during Github Action
+
+In step 5 you trained the model, this returned a modelId that you needed to be copied to change the value of the setting **FormRecognizerModelId**.
+
+Now go to the function with the name **fnc-processor**.
+
+Go to the Configuration menu and click the FormRecognizerModelId to change the value of this setting with the trained modelId you got before.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/frmmodel.png)
+
+Once you changed the value, click the **Save button** at the top menu.
+
+## Step 8 - Open the viewer
 
 The viewer is a Blazor applicationt hat will help monitor the durable function execution.  You have two configuration keys you will need to modify.
 
@@ -336,3 +373,8 @@ To get those two values, go to the function called **fnc-processor**, from there
 For the **APIKey** in the Azure Function menu click the menu **App keys**, from there you will see two Host keys, copy the key with the value **default**.
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/fnckey.png)
+
+The **Configuration** of the viewer will look like this.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/appsettings.png)
+
