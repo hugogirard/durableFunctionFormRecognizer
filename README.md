@@ -378,3 +378,8 @@ The **Configuration** of the viewer will look like this.
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/appsettings.png)
 
+Now in the Viewer click the Start hyperlink
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/start.png)
+
+This will start the Processor Function and you should see the result of each instance (activities) running in parallel.
