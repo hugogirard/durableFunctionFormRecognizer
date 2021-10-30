@@ -9,7 +9,6 @@
   <ItemGroup>
     <None Remove="appsettings.json" />
     <None Remove="Documents\ceo.pdf" />
-    <None Remove="global.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,9 +27,6 @@
     <Content Include="Documents\generic3.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>            
-    <Content Include="global.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
   <ItemGroup>

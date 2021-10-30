@@ -14,6 +14,7 @@
   - [Step 3 - Create Github Secrets](step-3-create-needed-github-secrets)
   - [Step 4 - Step 4 - Run the Github Action](step-4-run-the-github-action)
   - [Step 5 - Train the model](step-5-train-the-model)
+  - [Step 6 - Run the Seeder App](step-6-run-the-seeder-app)
 
 # About this sample
 
