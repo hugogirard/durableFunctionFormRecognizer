@@ -287,6 +287,16 @@ To calculate the pricing you need to use the document type Custom, so if we take
 
 If you enter the value **1000** for the nbrDocuments because the pricing is 50$ USD for 1000 pages and all documents are 1 page this will cost you around 50 USD.
 
+Now in the virtual machine, open a Command Prompt and do this command
 
+```
+cd c:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp
+```
+
+Now you are ready to run the seeder, to do this execute this command.
+
+```
+
+```
 
 
