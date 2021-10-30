@@ -289,7 +289,7 @@ The next value you need to add is **storageCnxString**. This is the connection s
 
 From there, you can click the Show keys button at the top and copy your connection string in the appsettings.json file.
 
-The other value that is important is the **nbrDocuments**, this is the number of document you want to add in the storage.  To prevent any surprises, if you add multiples documents refer to the [Azure Pricing for Form Recognizer](https://azure.microsoft.com/en-us/pricing/details/form-recognizer/).  In our case, all documents created contains only one page.
+The other value that is important is the **nbrDocuments**, this is the number of documents you want to add in the storage.  To prevent any surprises, if you add multiples documents refer to the [Azure Pricing for Form Recognizer](https://azure.microsoft.com/en-us/pricing/details/form-recognizer/).  In our case, all documents created contains only one page.
 
 To calculate the pricing, you need to use the document type Custom, so if we take this example (pricing change often, this picture can be different than your actual pricing).
 
@@ -298,16 +298,41 @@ To calculate the pricing, you need to use the document type Custom, so if we tak
 
 If you enter the value **1000** for the nbrDocuments because the pricing is 50$ USD for 1000 pages and all documents are 1 page this will cost you around 50 USD.
 
-Now in the virtual machine, open a Command Prompt and do this command
+Now in the virtual machine open a Command Prompt and do this command
 
 ```
 cd c:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp
+```
+Compile the program to be sure 
+
+```
+dotnet build -c Release
 ```
 
 Now you are ready to run the seeder, to do this execute this command.
 
 ```
-
+dotnet bin\Release\net5.0\SeederApp.dll
 ```
+## Step 7 - Open the viewer
 
+The viewer is a Blazor applicationt hat will help monitor the durable function execution.  You have two configuration keys you will need to modify.
 
+Go to the Web App called **blazor-admin** and click on it.  Go to the **Configuration** menu.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/configuration.png)
+
+You will need to add two new application setting here.
+
+| Name | Value
+|------|-------
+| EndpointUrl | The endpoint of the processor function
+| APIKey | The KEY of the processor function
+
+To get those two values, go to the function called **fnc-processor**, from there you will see the URL, this value will be the **EndpointUrl1**.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/url.png)
+
+For the **APIKey** in the Azure Function menu click the menu **App keys**, from there you will see two Host keys, copy the key with the value **default**.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/fnckey.png)
