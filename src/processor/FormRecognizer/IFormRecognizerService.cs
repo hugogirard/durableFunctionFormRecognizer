@@ -17,12 +17,14 @@
 *
 * DEMO POC - "AS IS"
 */
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Azure.AI.FormRecognizer.Models;
 using Microsoft.Extensions.Logging;
 
 public interface IFormRecognizerService
 {
     public Task<string> SubmitDocument(string modelId, Stream stream, ILogger log);
-    public Task<FormRecognizerResult> RetreiveResults(string operationId, ILogger log);
+    public Task<IEnumerable<RecognizedForm>> RetreiveResults(string operationId, ILogger log);
 }

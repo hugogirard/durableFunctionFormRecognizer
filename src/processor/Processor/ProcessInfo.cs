@@ -17,18 +17,15 @@
 *
 * DEMO POC - "AS IS"
 */
+using System;
 using System.Collections.Generic;
 using Azure.AI.FormRecognizer.Models;
 
-public class FormRecognizerResult 
-{
-    public enum ResultStatus
-    {
-        NotCompleted = 0,
-        CompletedWithResult = 1,
-        CompletedWithoutResult = 2
-    }
-
+public class ProcessInfo
+{   
+    public BlobInfo Blob { get; set; }
+    public string Exception { get; set; }
+    public string OperationId { get; set; }
+    public DateTime StartTime { get; set; }
     public IEnumerable<RecognizedForm> Forms { get; set; }
-    public ResultStatus Status { get; set; }
 }

@@ -60,10 +60,9 @@ public class BlobInfoEntity
     public IEnumerable<BlobInfo> Reserve((int partitionId, int maximumAmount) input)
     {
         if (!Partitions.ContainsKey(input.partitionId))
-        {
             Partitions[input.partitionId] = new List<BlobInfo>();
-        }
 
+        // Return existing data from the partition if available (in case of a failure)
         if (Partitions[input.partitionId].Count == 0)
         {
             if (Backlog.Count == 0) return Enumerable.Empty<BlobInfo>();             
@@ -80,18 +79,12 @@ public class BlobInfoEntity
     {
         var cacheIndex = Cache.ToDictionary(x => x.BlobName);
 
-        var now = DateTime.Now;
         foreach(var blob in input.blobs)
         {
             if (cacheIndex.ContainsKey(blob.BlobName))
-            {
                 logger.LogWarning($"[BlobInfoEntity] Blob {blob.BlobName} was already present in the cache...");
-            }
             else
-            {
-                blob.StateChangeTime = now;
                 Cache.Add(blob);                
-            }
         }
 
         if (Partitions.ContainsKey(input.partitionId))
@@ -106,8 +99,9 @@ public class BlobInfoEntity
 
         foreach(var blob in blobs)
         {
+            // This log will occur if the blob storage is not in sync with the processed cache
             if (cacheIndex.ContainsKey(blob.BlobName))
-                logger.LogInformation($"Cache hit for {blob.BlobName}");
+                logger.LogInformation($"Cache hit for {blob.BlobName}...");
 
             if (!backlogIndex.ContainsKey(blob.BlobName) && 
                 !partitionIndex.ContainsKey(blob.BlobName) &&

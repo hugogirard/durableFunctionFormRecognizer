@@ -17,17 +17,13 @@
 *
 * DEMO POC - "AS IS"
 */
-using System.Linq;
-using System.Collections.Generic;
-
-public static class EnumerableHelper
-{        
-    public static IEnumerable<IEnumerable<T>> Partition<T>(this IEnumerable<T> source, int partitionSize)
-    {
-        while (source.Any())
-        {
-            yield return source.Take(partitionSize);
-            source = source.Skip(partitionSize);
-        }
-    }
+[System.Serializable]
+public class TransientFailureException : System.Exception
+{
+    public TransientFailureException() { }
+    public TransientFailureException(string message) : base(message) { }
+    public TransientFailureException(string message, System.Exception inner) : base(message, inner) { }
+    protected TransientFailureException(
+        System.Runtime.Serialization.SerializationInfo info,
+        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }

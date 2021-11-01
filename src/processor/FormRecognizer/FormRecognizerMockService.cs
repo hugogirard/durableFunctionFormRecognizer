@@ -18,10 +18,12 @@
 * DEMO POC - "AS IS"
 */
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.AI.FormRecognizer.Models;
 using Microsoft.Extensions.Logging;
 
 public class FormRecognizerMockService : IFormRecognizerService
@@ -55,7 +57,7 @@ public class FormRecognizerMockService : IFormRecognizerService
         return Guid.NewGuid().ToString();
     }    
 
-    public async Task<FormRecognizerResult> RetreiveResults(string operationId, ILogger log)
+    public async Task<IEnumerable<RecognizedForm>> RetreiveResults(string operationId, ILogger log)
     {
         // // Simulate failures and latency
         // var rnd = new Random();
@@ -72,6 +74,6 @@ public class FormRecognizerMockService : IFormRecognizerService
             var client = httpClientFactory.CreateClient();
             var result = await client.GetAsync(serviceUrl);
         }
-        return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.CompletedWithoutResult };
+        return null;
     }
 }

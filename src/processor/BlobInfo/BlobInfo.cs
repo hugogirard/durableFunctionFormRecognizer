@@ -36,8 +36,5 @@ public class BlobInfo
     public ProcessState State { get; set; }
 
     [JsonProperty("f")]
-    public int TransientFailureCount { get; set; }
-
-    [JsonProperty("c")]
-    public DateTime? StateChangeTime { get; set; }    
+    public int TransientFailureCount { get; set; }   
 }

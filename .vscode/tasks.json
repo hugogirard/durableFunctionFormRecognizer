@@ -12,7 +12,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\processor"
+				"cwd": "${workspaceFolder}/src/processor"
 			},
 			"group": "build"
 		},
@@ -32,8 +32,23 @@
 			},
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\processor"
+				"cwd": "${workspaceFolder}/src/processor"
 			}
+		},
+		{
+			"label": "clean (seeder)",
+			"command": "dotnet",
+			"args": [
+				"clean",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/consoleSeeder/SeederApp"
+			},
+			"group": "build"
 		},
 		{
 			"label": "clean (viewer)",
@@ -46,9 +61,25 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\viewer"
+				"cwd": "${workspaceFolder}/src/viewer"
 			},
 			"group": "build"
+		},
+		{
+			"label": "build (seeder)",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"type": "process",
+			"dependsOn": "clean (seeder)",
+			"group": "build",
+			"problemMatcher": "$msCompile",
+			"options": {
+				"cwd": "${workspaceFolder}/src/consoleSeeder/SeederApp"
+			}
 		},
 		{
 			"label": "build (viewer)",
@@ -63,7 +94,7 @@
 			"group": "build",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\viewer"
+				"cwd": "${workspaceFolder}/src/viewer"
 			}
 		},
 		{
@@ -79,7 +110,7 @@
 			"type": "process",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\processor"
+				"cwd": "${workspaceFolder}/src/processor"
 			}
 		},
 		{
@@ -96,14 +127,14 @@
 			"dependsOn": "clean release (functions)",
 			"problemMatcher": "$msCompile",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\processor"
+				"cwd": "${workspaceFolder}/src/processor"
 			}
 		},
 		{
 			"type": "func",
 			"dependsOn": "build (functions)",
 			"options": {
-				"cwd": "${workspaceFolder}/src\\processor/bin/Debug/netcoreapp3.1"
+				"cwd": "${workspaceFolder}/src/processor/bin/Debug/netcoreapp3.1"
 			},
 			"command": "host start",
 			"isBackground": true,

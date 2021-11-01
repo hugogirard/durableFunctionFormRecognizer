@@ -32,12 +32,12 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
-public class Starter
+public class Controller
 {
     private ProcessorOptions processorOptions;
     private IBlobStorageService blobStorageService;
 
-    public Starter(ProcessorOptions processorOptions, IBlobStorageService blobStorageService)
+    public Controller(ProcessorOptions processorOptions, IBlobStorageService blobStorageService)
     {
         this.processorOptions = processorOptions;
         this.blobStorageService = blobStorageService;
@@ -111,30 +111,6 @@ public class Starter
         await Task.WhenAll(tasks);
 
         return new OkObjectResult("Clear complete");
-    }    
-
-    [FunctionName("Seed")]
-    public async Task HttpSeed(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestMessage req,
-        ExecutionContext context,
-        ILogger log)
-    {
-        var stateName = Enum.GetName(typeof(BlobInfo.ProcessState), BlobInfo.ProcessState.Unprocessed);
-
-        for (int i = 0; i < 100000; i++)
-        {
-            var tasks = new List<Task>();
-            for (int j=1; j<=6; j++)
-            {
-                var file = $"file-{i:0000000}-{j}.pdf";
-                log.LogInformation(file);                
-                
-                var fi = new System.IO.FileInfo($@"..\..\..\Seed\Seed-{j}.pdf");
-                tasks.Add(blobStorageService.UploadFileIfNewAndTag(fi.FullName, file, stateName.ToLower()));
-            }
-
-            await Task.WhenAll(tasks);
-        }
     }
 
     [FunctionName("Diagnostics")]
@@ -165,7 +141,8 @@ public class Starter
         return new JsonResult(await GetAllOrchestrations(orchestrationClient, new string[] { "Collector", "Processor" }));
     }
 
-    private static async Task<IEnumerable<DurableOrchestrationStatus>> GetAllOrchestrations(IDurableOrchestrationClient orchestrationClient, string[] names)
+    private static async Task<IEnumerable<DurableOrchestrationStatus>> GetAllOrchestrations(
+        IDurableOrchestrationClient orchestrationClient, string[] names)
     {
         string continuationToken = null;
         var allInstances = new List<DurableOrchestrationStatus>();
@@ -173,17 +150,16 @@ public class Starter
         {
             var condition = new OrchestrationStatusQueryCondition();
             condition.ContinuationToken = continuationToken;
-            var result = await orchestrationClient.ListInstancesAsync(
-                condition, CancellationToken.None);
+            var result = await orchestrationClient.ListInstancesAsync(condition, CancellationToken.None);
             continuationToken = result.ContinuationToken;
-            allInstances.AddRange(result.DurableOrchestrationState.Where(
-                i => names.Any(n => n == i.Name)));
+            allInstances.AddRange(result.DurableOrchestrationState.Where(i => names.Any(n => n == i.Name)));
         }
         while (!String.IsNullOrEmpty(continuationToken));
         return allInstances;
     }
 
-    private static async Task<IEnumerable<DurableEntityStatus>> GetAllEntities(IDurableEntityClient entityClient, string name)
+    private static async Task<IEnumerable<DurableEntityStatus>> GetAllEntities(
+        IDurableEntityClient entityClient, string name)
     {
         string continuationToken = null;
         var allInstances = new List<DurableEntityStatus>();
@@ -192,8 +168,7 @@ public class Starter
             var condition = new EntityQuery();
             condition.EntityName = name;
             condition.ContinuationToken = continuationToken;
-            var result = await entityClient.ListEntitiesAsync(
-                condition, CancellationToken.None);
+            var result = await entityClient.ListEntitiesAsync(condition, CancellationToken.None);
             continuationToken = result.ContinuationToken;
             allInstances.AddRange(result.Entities);
         }

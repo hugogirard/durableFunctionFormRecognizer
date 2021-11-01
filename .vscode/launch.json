@@ -1,6 +1,14 @@
 {
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Run Seeder",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build (seeder)",
+            "program": "${workspaceFolder}/src/consoleSeeder/SeederApp/bin/Debug/net5.0/SeederApp",
+            "cwd": "${workspaceFolder}/src/consoleSeeder/SeederApp",
+        },
         { 
             "name": "Attach to .NET Functions",
             "type": "coreclr",

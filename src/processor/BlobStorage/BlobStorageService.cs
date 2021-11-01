@@ -26,6 +26,8 @@ using Azure.Storage.Blobs;
 
 public class BlobStorageService : IBlobStorageService
 {
+    private const string StateTagName = "status";
+
     private string blobContainerName;
     private BlobServiceClient blobServiceClient;
 
@@ -39,14 +41,16 @@ public class BlobStorageService : IBlobStorageService
     {
         var blobs = new List<BlobInfo>();
         var stateName = Enum.GetName(typeof(BlobInfo.ProcessState), BlobInfo.ProcessState.Unprocessed);
-        var enumerator = blobServiceClient.FindBlobsByTagsAsync($"@container = '{blobContainerName}' AND status = '{stateName.ToLower()}'").
-            AsPages(continuationToken, batchSize).GetAsyncEnumerator();
+        var enumerator = blobServiceClient.FindBlobsByTagsAsync(
+                $"@container = '{blobContainerName}' AND {StateTagName} = '{stateName.ToLower()}'")
+                .AsPages(continuationToken, batchSize).GetAsyncEnumerator();
         
         continuationToken = null;
         if (await enumerator.MoveNextAsync())
         {
             continuationToken = enumerator.Current.ContinuationToken;
-            blobs.AddRange(enumerator.Current.Values.Select(x => new BlobInfo() { BlobName = x.BlobName, State = BlobInfo.ProcessState.Unprocessed }).ToArray());
+            blobs.AddRange(enumerator.Current.Values.Select(x => 
+                new BlobInfo() { BlobName = x.BlobName, State = BlobInfo.ProcessState.Unprocessed }).ToArray());
         }        
 
         return new CollectorOutput() { Blobs = blobs, ContinuationToken = continuationToken };
@@ -58,7 +62,8 @@ public class BlobStorageService : IBlobStorageService
         foreach(var blob in blobs)
         {
             var blobClient = blobServiceClient.GetBlobContainerClient(blobContainerName).GetBlobClient(blob.BlobName);
-            tasks.Add(blobClient.SetTagsAsync(new Dictionary<string,string>() { { "status", Enum.GetName(typeof(BlobInfo.ProcessState), blob.State).ToLower() } }));
+            tasks.Add(blobClient.SetTagsAsync(new Dictionary<string,string>() 
+                { { StateTagName, Enum.GetName(typeof(BlobInfo.ProcessState), blob.State).ToLower() } }));
         }
         await Task.WhenAll(tasks);
     }
@@ -70,28 +75,11 @@ public class BlobStorageService : IBlobStorageService
         return content.Value.Content.ToStream();
     }
 
-    public async Task UploadStream(string blobName, Stream stream, bool overwite = false)
-    {
-        var blobClient = blobServiceClient.GetBlobContainerClient(blobContainerName).GetBlobClient(blobName);
-        await blobClient.UploadAsync(stream, overwrite: overwite);
-    }
-
-    public Task UploadFileIfNewAndTag(string sourceFile, string targetFile, string state)
-    {
-        var blobClient = blobServiceClient.GetBlobContainerClient(blobContainerName).GetBlobClient(targetFile);
-        return blobClient.ExistsAsync().ContinueWith(async e => {
-            if (!e.Result)                        
-            {                        
-                await blobClient.UploadAsync(sourceFile);
-            }
-            await blobClient.SetTagsAsync(new Dictionary<string, string>() { { "status", state } });
-        }, TaskContinuationOptions.AttachedToParent);        
-    }
-
     public async Task<BlobInfo> GetBlob(string blobName)
     {
         var blobClient = blobServiceClient.GetBlobContainerClient(blobContainerName).GetBlobClient(blobName);
         var tags = await blobClient.GetTagsAsync();
-        return new BlobInfo() { BlobName = blobName, State = Enum.Parse<BlobInfo.ProcessState>(tags.Value.Tags["status"], true) };
+        return new BlobInfo() { BlobName = blobName, 
+                                State = Enum.Parse<BlobInfo.ProcessState>(tags.Value.Tags[StateTagName], true) };
     }
 }

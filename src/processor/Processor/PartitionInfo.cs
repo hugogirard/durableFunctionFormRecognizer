@@ -17,15 +17,15 @@
 *
 * DEMO POC - "AS IS"
 */
-using System;
 using System.Collections.Generic;
-using Azure.AI.FormRecognizer.Models;
+using Newtonsoft.Json;
 
-public class ProcessBlobInfo
-{   
-    public BlobInfo Blob { get; set; }
-    public string Exception { get; set; }
-    public string OperationId { get; set; }
-    public DateTime StartTime { get; set; }
-    public IEnumerable<RecognizedForm> Forms { get; set; }
+public class PartitionInfo
+{    
+
+    [JsonProperty("p")]
+    public int PartitionId { get; set; }
+
+    [JsonProperty("e")]
+    public IEnumerable<BlobInfo> Blobs { get; set; }
 }

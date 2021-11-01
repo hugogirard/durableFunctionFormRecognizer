@@ -17,15 +17,11 @@
 *
 * DEMO POC - "AS IS"
 */
-using System.Collections.Generic;
-using Newtonsoft.Json;
+using System;
 
-public class ProcessInput
-{    
-
-    [JsonProperty("p")]
-    public int PartitionId { get; set; }
-
-    [JsonProperty("e")]
-    public IEnumerable<BlobInfo> Blobs { get; set; }
+public class CollectorOptions : BaseOptions
+{
+    public int BatchSize { get; set; }
+    public int MinBacklogSize { get; set; }
+    public TimeSpan CollectDelay { get; set; }    
 }

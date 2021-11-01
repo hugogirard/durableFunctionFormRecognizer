@@ -49,16 +49,6 @@ public class BlobMockStorageService : IBlobStorageService
         return Task.FromResult(Stream.Null);
     }
 
-    public Task UploadStream(string blobName, Stream stream, bool overwite = false)
-    {
-        return Task.CompletedTask;
-    }
-
-    public Task UploadFileIfNewAndTag(string sourceFile, string targetFile, string state)
-    {        
-        return Task.CompletedTask;
-    }
-
     public Task<BlobInfo> GetBlob(string blobName)
     {
         return Task.FromResult(new BlobInfo() { BlobName = blobName, State = BlobInfo.ProcessState.Processed });

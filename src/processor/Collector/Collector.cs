@@ -52,6 +52,8 @@ public class Collector
 
             bool newBlobsAvailable = true;
             string continuationToken = null;
+
+            // Keep adding blobs to the backlog until the minimum size is reached or no more blobs are available
             while (newBlobsAvailable && count < options.MinBacklogSize)
             {
                 log.LogInformation($"[Collector] Collecting more blobs...");
@@ -61,6 +63,7 @@ public class Collector
 
                 if (output.Blobs.Any())
                 {
+                    // Blobs already in the backlog, in processing or in the processed cache are not added again
                     log.LogInformation($"[Collector] Adding blobs to the backlog...");
                     var newCount = await context.CallEntityAsync<int>(BlobInfoEntity.EntityId, "AddToBacklog", output.Blobs);
                     log.LogInformation($"[Collector] Current backlog count is {newCount}");
@@ -70,6 +73,8 @@ public class Collector
 
             if (!newBlobsAvailable) log.LogWarning($"[Collector] No new blobs available in blob storage...");
 
+            // This removes the blob from the processed cache if it's in sync with the blob storage
+            // This prevents a race condition when the blob storage is not up to date
             log.LogInformation($"[Collector] Starting cleanup...");
             var cache = await context.CallEntityAsync<IEnumerable<BlobInfo>>(BlobInfoEntity.EntityId, "GetCache");
             var blobsToRemove = await context.CallActivityAsync<IEnumerable<BlobInfo>>("Collector_Cleanup", cache);
@@ -82,6 +87,7 @@ public class Collector
         }
         catch (Exception ex)
         {
+            // In case of a failure, the current instance will fail and an new one is started with a reference to the current
             log.LogError($"[Collector] Collector failed with the following exception: {ex.ToString()}");
             input.PreviousInstanceId = context.InstanceId;
             await context.CallActivityAsync("Collector_Restart", input);
@@ -118,13 +124,9 @@ public class Collector
         {
             var storageBlob = await blobStorageService.GetBlob(cacheBlob.BlobName);
             if (storageBlob.State == cacheBlob.State) 
-            {
                 blobsToRemove.Add(cacheBlob);
-            }
             else
-            {
-                log.LogWarning($"[Collector] Consistency issue on blob {cacheBlob.BlobName} after {(DateTime.Now-cacheBlob.StateChangeTime.Value).TotalSeconds}sec");
-            }
+                log.LogWarning($"[Collector] Consistency issue on blob {cacheBlob.BlobName}");
         }
         return blobsToRemove;
     }     

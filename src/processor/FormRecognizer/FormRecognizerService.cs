@@ -17,7 +17,9 @@
 *
 * DEMO POC - "AS IS"
 */
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
@@ -51,7 +53,7 @@ public class FormRecognizerService : IFormRecognizerService
         }
     }    
 
-    public async Task<FormRecognizerResult> RetreiveResults(string operationId, ILogger log)
+    public async Task<IEnumerable<RecognizedForm>> RetreiveResults(string operationId, ILogger log)
     {
         try
         {
@@ -59,8 +61,8 @@ public class FormRecognizerService : IFormRecognizerService
             await operation.UpdateStatusAsync(CancellationToken.None);
             if (operation.HasCompleted)
             {
-                if (operation.HasValue) return new FormRecognizerResult() { Forms = operation.Value, Status = FormRecognizerResult.ResultStatus.CompletedWithResult };
-                return new FormRecognizerResult() { Status = FormRecognizerResult.ResultStatus.CompletedWithoutResult };
+                if (operation.HasValue) return operation.Value;
+                return Enumerable.Empty<RecognizedForm>();
             }
             throw new IncompleteOperationException();
         }
