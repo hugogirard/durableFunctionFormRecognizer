@@ -10,7 +10,7 @@
             "cwd": "${workspaceFolder}/src/consoleSeeder/SeederApp",
         },
         { 
-            "name": "Attach to .NET Functions",
+            "name": "Run Processor Function",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
@@ -20,7 +20,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build (viewer)",
-            "program": "${workspaceFolder}/src/viewer/bin/Debug/netcoreapp3.1/viewer",
+            "program": "${workspaceFolder}/src/viewer/bin/Debug/net5.0/viewer",
             "args": [],
             "cwd": "${workspaceFolder}/src/viewer",
             "stopAtEntry": false,
