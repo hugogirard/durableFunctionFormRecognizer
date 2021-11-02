@@ -83,7 +83,15 @@ Azure Applied AI Services, uses machine learning technology to identify and extr
 
 This function app uses two types of [eternal durable functions](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-eternal-orchestrations?tabs=csharp) (Collector and Processor) and a [durable entity](https://docs.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-entities) (BlobInfoEntity).
 
-### Collector
+### BlobInfo Durable Entity
+
+The BlobInfo is a single durable entity used to store the blob metadata. It's split into three sections:
+
+- The backlog: Unprocessed blobs ready to be processed.
+- The partitions: Blobs currently processed by a processor instance.
+- The processed cache: Blobs recently processed are kept into cache to prevent race conditions where the Blob storage is updated yet.
+
+### Collector Function
 
 The Collector is a single-instance eternal function which is responsible of fetching unprocessed blobs. The goal is to maintain a sufficient backlog, so the Processors never run out of blobs tor process. It runs every 10 seconds by default.
 
@@ -95,7 +103,7 @@ The Collector is a single-instance eternal function which is responsible of fetc
 
 ![Collector sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Sequence.png)
 
-## Processor
+## Processor Function
 
 The Processor consists of multiple instances or an eternal function. It's responsible for sending the blobs to Form Recognizer for processing, saving the results and updating the blobs states.
 
