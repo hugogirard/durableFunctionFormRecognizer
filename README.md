@@ -1,20 +1,22 @@
 - [About this sample](#about-this-sample)
 - [Architecture](#architecture)
-- [Azure Resources deployed in this sample](azure-resources-deployed-in-this-sample)
+- [Azure Resources deployed in this sample](#azure-resources-deployed-in-this-sample)
   - [Seeder](#seeder)
-  - [Storage Document](storage-(document))
-  - [Storage Functions](storage-(functions))
-  - [Train Model Function](train-model-function)
-  - [Form Recognizer](form-recognizer)
+  - [Storage Document](#storage-document)
+  - [Storage Functions](#storage-functions)
+  - [Train Model Function](#train-model-function)
+  - [Form Recognizer](#form-recognizer)
   - [Durable Function Processor](#durable-function-processor)
-  - [Blazor Server Viewer](blazor-server-viewer)
-- [Installation](installation)
-  - [Step 1 - Github Repository](step-1-fork-the-github-repository)
-  - [Step 2 - Create a Service Principal](step-2-create-a-service-principal-needed-for-the-github-action)
-  - [Step 3 - Create Github Secrets](step-3-create-needed-github-secrets)
-  - [Step 4 - Step 4 - Run the Github Action](step-4-run-the-github-action)
-  - [Step 5 - Train the model](step-5-train-the-model)
-  - [Step 6 - Run the Seeder App](step-6-run-the-seeder-app)
+  - [Blazor Server Viewer](#blazor-server-viewer)
+- [Installation](#installation)
+  - [Step 1 - GitHub Repository](#step-1---fork-the-github-repository)
+  - [Step 2 - Create a Service Principal](#step-2---create-a-service-principal-for-the-github-action)
+  - [Step 3 - Create GitHub Secrets](#step-3---create-needed-github-secrets)
+  - [Step 4 - Run the GitHub Action](#step-4---run-the-github-action)
+  - [Step 5 - Train the model](#step-5---train-the-model)
+  - [Step 6 - Run the Seeder App](#step-6---run-the-seeder-app)
+  - [Step 7 - Configure the Processor](#step-7---configure-the-processor-function)
+  - [Step 8 - Open the Viewer](#step-8---open-the-viewer)
 
 # About this sample
 
@@ -127,7 +129,17 @@ The Collector and the Processor functions have to be always running and use the 
 
 ## Blazor Server Viewer
 
-This Blazor application shows all the processor function progress. From there you can follow each instance of the processor function, terminate the function and see any exceptions or metrics related to the processing flow.
+This Blazor application can be used to control the processing. The Start action link at the top starts the Collector and Processor instances while the Clear action link will terminate all running instances and reset the current entity data.
+
+It can also be used to follow execution progress. The first line represents the Collector instance and the following lines represents the different Processor instances. 
+
+You'll find details like the instance id, the status, the duration, etc. For the Processor instances, you'll also see the partition id and the statistics, like the number of documents processed vs failed and the number of transient failures (throttling). 
+
+You can also use the action links to restart, terminate or purge the history for a specific instance. 
+
+Finally, in case of a failure, you'll see the previous instance id. If you uncheck "Hide failed instances", you'll be able to see the exception that caused the previous instance to fail.
+
+![viewer](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/viewer.png)
 
 ## Monitoring
 
@@ -394,6 +406,4 @@ Now in the Viewer click the Start hyperlink
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/start.png)
 
-This will start the Processor Function and you should see the result of each instance (activities) running in parallel. The first line represents the collector and the following lines represents the processor instances. You'll see details like the instance id, the status, the duration, etc. For the processor instances, you'll also see the partition id and the statistics, like the number of documents processed vs failed and the number of transient failures (throttling). You can also use the action links to restart or terminate a specific instance. The Clear action link at the top will terminate all running instances and reset the current data. Finally, in case of a failure, you'll see the previous instance id. If you uncheck "Hide failed instances", you'll be able to see the exception that caused the instance to fail.
-
-![viewer](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/viewer.png)
+This will start the Processor Function and you should see the result of each instance (activities) running in parallel. For more details, see the [Viewer section](#blazor-server-viewer).
