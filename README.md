@@ -103,7 +103,7 @@ The Collector is a single-instance eternal function which is responsible of fetc
 
 ![Collector sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Collector-Sequence.png)
 
-## Processor Function
+### Processor Function
 
 The Processor consists of multiple instances or an eternal function. It's responsible for sending the blobs to Form Recognizer for processing, saving the results and updating the blobs states.
 
@@ -120,6 +120,10 @@ The results are saved to table storage, including the form fields and the OCR of
 #### Sequence digram:
 
 ![Processor sequence diagram](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/src/processor/Diagrams/Processor-Sequence.png)
+
+### Error handling
+
+The Collector and the Processor functions have to be always running and use the same technique for error handling. In case of on an unhandled exception, the current instance fails and a new instance is started with the same inputs. The [Viewer](#blazor-server-viewer) can be used to view the exceptions. The Processor also handles error at the blob level and unhandled exceptions will be available in the output table.
 
 ## Blazor Server Viewer
 
