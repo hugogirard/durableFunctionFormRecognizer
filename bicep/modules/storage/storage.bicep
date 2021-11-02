@@ -23,6 +23,7 @@ param suffix string
 
 var strAcccountNameFunc = 'strf${suffix}'
 var strAccountNameDoc = 'strd${suffix}'
+var storageTableName = 'documents'
 
 resource storageAccountFunction 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: strAcccountNameFunc
@@ -83,7 +84,7 @@ resource storageAccountDocument 'Microsoft.Storage/storageAccounts@2021-04-01' =
 }
 
 resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2021-06-01' = {
- name: '${storageAccountDocument.name}/default/documents'  
+ name: '${storageAccountDocument.name}/default/${storageTableName}'  
 }
 
 resource containerDocuments 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-04-01' = {
@@ -140,4 +141,4 @@ output strDocumentName string = storageAccountDocument.name
 output strDocumentId string = storageAccountDocument.id
 output strDocumentApiVersion string = storageAccountDocument.apiVersion
 
-output tableName string = table.name
+output tableName string = storageTableName
