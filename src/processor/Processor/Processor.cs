@@ -205,7 +205,8 @@ public class Processor
                 var timeToSleep = processInfo.StartTime + options.FormRecognizerMinWaitTime - DateTime.Now;
                 if (timeToSleep > TimeSpan.Zero) Thread.Sleep(timeToSleep);
 
-                processInfo.Forms = await formRecognizerService.RetreiveResults(processInfo.OperationId, log);                    
+                processInfo.Forms = await formRecognizerService.RetreiveResults(processInfo.OperationId, log);
+                processInfo.Blob.State = BlobInfo.ProcessState.Processed;
             }
         }
         return processInfo;    

@@ -382,4 +382,6 @@ Now in the Viewer click the Start hyperlink
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/start.png)
 
-This will start the Processor Function and you should see the result of each instance (activities) running in parallel.
+This will start the Processor Function and you should see the result of each instance (activities) running in parallel. The first line represents the collector and the following lines represents the processor instances. You'll see details like the instance id, the status, the duration, etc. For the processor instances, you'll also see the partition id and the statistics, like the number of documents processed vs failed and the number of transient failures (throttling). You can also use the action links to restart or terminate a specific instance. The Clear action link at the top will terminate all running instances and reset the current data. Finally, in case of a failure, you'll see the previous instance id. If you uncheck "Hide failed instances", you'll be able to see the exception that caused the instance to fail.
+
+![viewer](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/viewer.png)
