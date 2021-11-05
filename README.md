@@ -17,6 +17,10 @@
   - [Step 6 - Run the Seeder App](#step-6---run-the-seeder-app)
   - [Step 7 - Configure the Processor](#step-7---configure-the-processor-function)
   - [Step 8 - Open the Viewer](#step-8---open-the-viewer)
+- [Problems](#problems)
+  - [Pipeline failed because of soft delete](#pipeline-failed-because-of-soft-delete)
+  
+
 
 # About this sample
 
@@ -383,7 +387,7 @@ Go to the Web App called **blazor-admin** and click on it.  Go to the **Configur
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/configuration.png)
 
-You will need to add two new application setting here.
+You will need to add two new applications setting here.
 
 | Name | Value
 |------|-------
@@ -407,3 +411,33 @@ Now in the Viewer click the Start hyperlink
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/start.png)
 
 This will start the Processor Function and you should see the result of each instance (activities) running in parallel. For more details, see the [Viewer section](#blazor-server-viewer).
+
+To track what is happening you can always go to the Log Stream of the processor function.  You will see the log of all processor activities.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/log.png)
+
+Once all documents are finished processing, you will see the total in the viewer and the number of documents processed by each activity function.
+
+![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/viewerprocessing.png)
+
+# Problems
+
+## Pipeline failed because of soft delete
+
+If you delete your resources created using the pipeline and run it again is possible, you get an error like this.
+
+**To restore the resource, you must specify 'restore' to be 'true' in the property. If you don't want to restore existing resources, please purge it first**.
+
+This is because Cognitive Services has a soft-delete feature, you will need to purge the instance using Azure CLI.
+
+First run this command
+
+```
+az rest --method get --header 'Accept=application/json' -u 'https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.CognitiveServices/deletedAccounts?api-version=2021-04-30'
+```
+
+This will return you the list of all Cognitive Services that are tagged soft-deleted.  Find the one that cause your problem and run the following command.
+
+```
+az resource delete --ids $id
+```
