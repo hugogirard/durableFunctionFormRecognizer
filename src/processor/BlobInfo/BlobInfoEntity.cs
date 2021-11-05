@@ -101,7 +101,7 @@ public class BlobInfoEntity
         {
             // This log will occur if the blob storage is not in sync with the processed cache
             if (cacheIndex.ContainsKey(blob.BlobName))
-                logger.LogInformation($"Cache hit for {blob.BlobName}...");
+                logger.LogWarning($"Cache hit for {blob.BlobName}...");
 
             if (!backlogIndex.ContainsKey(blob.BlobName) && 
                 !partitionIndex.ContainsKey(blob.BlobName) &&
