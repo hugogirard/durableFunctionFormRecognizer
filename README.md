@@ -32,7 +32,7 @@ The goal of this sample is to illustrate a Cloud pattern to process multiple doc
 
 Here’s more details for the different parts of this architecture.
 
-1 - The seeder sends X documents with the tag status with the value unprocessed to the container document in Azure Storage.
+1 - The seeder sends X documents tagged as status=unprocessed to a container named document in Azure Storage.
 
 2a - The train model function gets a SAS from the model container.
 
@@ -42,23 +42,23 @@ Here’s more details for the different parts of this architecture.
 
 3a - The processor function starts retrieving documents (blobs) from the storage.
 
-3b - The processor function sends the documents to be analyzed to Form Recognizer.
+3b - The processor function sends the documents to Form Recognizer for analysis.
 
-4 - The Blazor viewer app retrieves the status from the processor function.
+4 - The Blazor viewer app retrieves the diagnostic information from the processor function.
 
-5 - If needed, the Blazor viewer app can restart or terminate any processor function app or start/stop the whole process.
+5 - If needed, the Blazor viewer app can restart or terminate any processor instance or start/stop the whole process.
 
 # Azure Resources deployed in this sample
 
 ## Seeder
 
-The seeder is a VM where a console app (C#) is installed.  The goal of this application is to create documents (blobs) in an Azure Storage.
+The seeder is a VM where a console app (C#) is deployed.  The goal of this application is to create documents (blobs) in an Azure Storage.
 
 Each document will be marked with a tag **status** with the value **unprocessed**.
 
 We are leveraging the [indexing](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-index-how-to?tabs=azure-portal) feature of Azure Storage to retrieve documents in storage that need to be processed.
 
-The seeder app is leveraging multithreading in C#, one thread will create X number of documents adding the specific tag in the Azure storage.
+The seeder app is leveraging multithreading in C#, one thread will create X number of documents with the specific tag in the Azure storage.
 
 ## Storage (Document)
 
@@ -95,7 +95,7 @@ The BlobInfo is a single durable entity used to store the blob metadata. It's sp
 
 - The backlog: Unprocessed blobs ready to be processed.
 - The partitions: Blobs currently processed by a processor instance.
-- The processed cache: Blobs recently processed are kept into cache to prevent race conditions where the Blob storage is updated yet.
+- The processed cache: Blobs recently processed are kept into cache to prevent race conditions where the Blob storage is not updated yet.
 
 ### Collector Function
 
@@ -115,7 +115,7 @@ The Processor consists of multiple instances or an eternal function. It's respon
 
 Each instance has its own partition (or slice) of blobs to process. For example, if batch size is 1000 and there's 10 instances, every instance will process 100 blobs per execution.
 
-It starts by sending the whole partition to Form Recognizer and before starting to query for results. This prevents wasting transactions (which count towards the TPS limit) to query results before Form Recognizer has completed its processing.
+It starts by sending the whole partition to Form Recognizer before starting to query for results. This prevents wasting transactions (which count towards the TPS limit) to query results before Form Recognizer has completed its processing.
 
 The results are saved to table storage, including the form fields and the OCR of the document. In case of a failure, the exception information is also included. If the call is throttled by Form Recognizer (transient failure), the processor will automatically retry.
 
@@ -129,15 +129,15 @@ The results are saved to table storage, including the form fields and the OCR of
 
 ### Error handling
 
-The Collector and the Processor functions have to be always running and use the same technique for error handling. In case of on an unhandled exception, the current instance fails and a new instance is started with the same inputs. The [Viewer](#blazor-server-viewer) can be used to view the exceptions. The Processor also handles error at the blob level and unhandled exceptions will be available in the output table.
+The Collector and the Processor functions have to be always running and use the same technique for error handling. In case of on an unhandled exception, the current instance fails and a new instance is started with the same inputs. The [Viewer](#blazor-server-viewer) can be used to view the exceptions. The Processor also handles errors at the blob level and unhandled exceptions will be available in the output table.
 
 ## Blazor Server Viewer
 
-This Blazor application can be used to control the processing. The Start action link at the top starts the Collector and Processor instances while the Clear action link will terminate all running instances and reset the current entity data.
+This Blazor application can be used to control the processing. The Start action link at the top starts the Collector and Processor instances, while the Clear action link will terminate all running instances and reset the current entity data.
 
-It can also be used to follow execution progress. The first line represents the Collector instance and the following lines represents the different Processor instances. 
+It can also be used to track execution progress. The first line represents the Collector instance and the following lines represents the different Processor instances. 
 
-You'll find details like the instance id, the status, the duration, etc. For the Processor instances, you'll also see the partition id and the statistics, like the number of documents processed vs failed and the number of transient failures (throttling). 
+You'll find details like the instance id, the status, the duration, etc. For Processor instances, you'll also see the partition id and the statistics, like the number of documents processed vs failed and the number of transient failures (throttling). 
 
 You can also use the action links to restart, terminate or purge the history for a specific instance. 
 
@@ -161,7 +161,7 @@ Click the button in the top right corner to Fork the git repository.
 
 ## Step 2 - Create a Service Principal for the GitHub Action
 
-All the creation of the Azure resources and deployment of all applications is done in this sample using a GitHub Action.  You will need to create a service principal that will be used to deploy everything.
+The creation of all the Azure resources and deployment of all applications is done in this sample using a GitHub Action.  You will need to create a service principal that will be used to deploy everything.
 
 To achieve this, please follow this [link](https://github.com/marketplace/actions/azure-login).  Be sure to save the output generated by the command line.  You will need it after to create a **GitHub Secret**.
 
@@ -324,9 +324,9 @@ To calculate the pricing, you need to use the document type Custom, so if we tak
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/frmpricing.png)
 
-If you enter the value **1000** for the nbrDocuments because the pricing is 50$ USD for 1000 pages and all documents are 1 page this will cost you around 50 USD.
+If you enter the value **1000** for the nbrDocuments, since the pricing is 50$ USD for 1000 pages and all documents are single-page, it will cost you around 50$ USD.
 
-Now in the virtual machine open a Command Prompt and do this command
+Now in the virtual machine, open a Command Prompt and execute this command:
 
 ```
 cd c:\git\durableFunctionFormRecognizer\src\consoleSeeder\SeederApp
@@ -337,7 +337,7 @@ Compile the program to be sure
 dotnet build -c Release
 ```
 
-Now you are ready to run the seeder, to do this execute this command.
+Now you are ready to run the seeder, execute this command:
 
 ```
 dotnet bin\Release\net5.0\SeederApp.dll
@@ -345,9 +345,9 @@ dotnet bin\Release\net5.0\SeederApp.dll
 
 ## Step 7 - Configure the processor function
 
-You will need to change one configuration of the processor functions, all settings use default value (that you can change) or are set during the creation of the resources.  
+You will need to change only one configuration setting of the processor function. All other settings use the default values (that you can change) or are set during the creation of the resources.
 
-Here the list of all settings of the processor function
+Here's the list of all settings of the processor function:
 
 Name | Description | Default value
 ---- | ----------- | -------------
@@ -369,7 +369,7 @@ FormRecognizerMinWaitTime | Minimum wait time after submitting a document to For
 TableStorageConnectionString | Connection string for the target table storage | Set during Github Action
 TableStorageTableName | Name of target table in table storage | Set during Github Action
 
-In step 5 you trained the model, this returned a modelId that you needed to be copied to change the value of the setting **FormRecognizerModelId**.
+In step 5, when you trained the model, it returned a modelId that you need to set the value of the setting **FormRecognizerModelId**.
 
 Now go to the function with the name **fnc-processor**.
 
@@ -381,18 +381,18 @@ Once you changed the value, click the **Save button** at the top menu.
 
 ## Step 8 - Open the viewer
 
-The viewer is a Blazor applicationt hat will help monitor the durable function execution.  You have two configuration keys you will need to modify.
+The viewer is a Blazor application that will help monitor the durable function execution.  There's two configuration keys you will need to modify.
 
 Go to the Web App called **blazor-admin** and click on it.  Go to the **Configuration** menu.
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/configuration.png)
 
-You will need to add two new applications setting here.
+You will need to add two new application settings here.
 
 | Name | Value
 |------|-------
 | EndpointUrl | The endpoint of the processor function
-| APIKey | The KEY of the processor function
+| APIKey | The host key of the processor function
 
 To get those two values, go to the function called **fnc-processor**, from there you will see the URL, this value will be the **EndpointUrl1**.
 
@@ -406,7 +406,7 @@ The **Configuration** of the viewer will look like this.
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/appsettings.png)
 
-Now in the Viewer click the Start hyperlink
+Now in the Viewer, click the Start hyperlink
 
 ![tag](https://raw.githubusercontent.com/hugogirard/durableFunctionFormRecognizer/main/images/start.png)
 
@@ -424,19 +424,19 @@ Once all documents are finished processing, you will see the total in the viewer
 
 ## Pipeline failed because of soft delete
 
-If you delete your resources created using the pipeline and run it again is possible, you get an error like this.
+If you delete your resources created using the pipeline and run it again, it's possible you get an error like this.
 
 **To restore the resource, you must specify 'restore' to be 'true' in the property. If you don't want to restore existing resources, please purge it first**.
 
 This is because Cognitive Services has a soft-delete feature, you will need to purge the instance using Azure CLI.
 
-First run this command
+First run this command:
 
 ```
 az rest --method get --header 'Accept=application/json' -u 'https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.CognitiveServices/deletedAccounts?api-version=2021-04-30'
 ```
 
-This will return you the list of all Cognitive Services that are tagged soft-deleted.  Find the one that cause your problem and run the following command.
+This will return the list of all Cognitive Services that are tagged as soft-deleted.  Find the one that causes the issue and run the following command:
 
 ```
 az resource delete --ids $id
